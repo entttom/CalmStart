@@ -134,14 +134,22 @@
 		<label><textarea id="options_css"></textarea></label>
 	</fieldset>
 	<fieldset>
-		<legend>Development</legend>
-		<label><span>Build</span><input type="text" value="feature/sync-storage" readonly/></label>
-		<label><span>Storage backend</span><input id="dev_storage_backend" type="text" value="localStorage (legacy)" readonly/></label>
-		<label><span>Cloud sync</span><input id="dev_sync_status" type="text" value="Not enabled yet" readonly/></label>
+		<legend>Development / Sync</legend>
+		<label><span>Build</span><input type="text" value="1.27 sync DEV" readonly/></label>
+		<label><span>Storage backend</span><input id="dev_storage_backend" type="text" value="Initializing..." readonly/></label>
+		<label><span>Cloud sync</span><input id="dev_sync_status" type="text" value="Initializing..." readonly/></label>
+		<label><span>Device ID</span><input id="dev_device_id" type="text" value="Pending" readonly/></label>
+		<label><span>Layout revision</span><input id="dev_layout_revision" type="text" value="0" readonly/></label>
+		<label><span>Last sync</span><input id="dev_last_sync" type="text" value="Never" readonly/></label>
+		<label><span>Layout backups</span><input id="dev_backup_status" type="text" value="0" readonly/></label>
+		<label><span>Detected conflicts</span><input id="dev_conflicts" type="text" value="0" readonly/></label>
+		<label><span>Recovery</span><button id="dev_restore_layout" type="button" disabled>Restore previous layout</button></label>
 	</fieldset>
 	</div>
 </div>
 <script src="storage.js"></script>
-<script src="newtab.js"></script>
+<script src="storage-bookmarks.js"></script>
+<script src="storage-sync.js"></script>
+<script src="storage-bootstrap.js"></script>
 </body>
 </html>
