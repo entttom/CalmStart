@@ -133,8 +133,15 @@
 		<legend>Custom CSS</legend>
 		<label><textarea id="options_css"></textarea></label>
 	</fieldset>
+	<fieldset>
+		<legend>Development</legend>
+		<label><span>Build</span><input type="text" value="feature/sync-storage" readonly/></label>
+		<label><span>Storage backend</span><input id="dev_storage_backend" type="text" value="localStorage (legacy)" readonly/></label>
+		<label><span>Cloud sync</span><input id="dev_sync_status" type="text" value="Not enabled yet" readonly/></label>
+	</fieldset>
 	</div>
 </div>
+<script src="storage.js"></script>
 <script src="newtab.js"></script>
 </body>
 </html>
