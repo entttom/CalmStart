@@ -86,6 +86,7 @@
 			rootTitle: root ? (root.title || '') : '',
 			path: S.clone(entry.path),
 			title: entry.node.title || '',
+			childCount: (entry.node.children || []).length,
 			fingerprint: entry.fingerprint
 		};
 	};
@@ -96,7 +97,7 @@
 		if (ref.kind !== 'bookmark' || !S.bookmarkIndex) return null;
 
 		var root = S.bookmarkIndex.roots[ref.rootIndex];
-		if (!root && ref.rootTitle) {
+		if ((!root || (ref.rootTitle && (root.title || '') !== ref.rootTitle)) && ref.rootTitle) {
 			for (var r = 0; r < S.bookmarkIndex.roots.length; r++) {
 				if ((S.bookmarkIndex.roots[r].title || '') === ref.rootTitle) {
 					root = S.bookmarkIndex.roots[r];
@@ -119,13 +120,17 @@
 		}
 		if (node && !node.url) return String(node.id);
 
-		// Fallback for renamed/restructured folders: compare a stable fingerprint
-		// of the folder's immediate contents, then prefer the old title/root.
+		// Fallback for renamed/restructured non-empty folders: compare a stable
+		// fingerprint of immediate contents, then prefer the old title/root. Empty
+		// folders deliberately skip this fallback so they cannot resolve to an
+		// unrelated empty folder after a rename.
 		var candidates = [];
-		for (var i = 0; i < S.bookmarkIndex.folderEntries.length; i++) {
-			var entry = S.bookmarkIndex.folderEntries[i];
-			if (ref.fingerprint && entry.fingerprint === ref.fingerprint)
-				candidates.push(entry);
+		if (ref.fingerprint && Number(ref.childCount) > 0) {
+			for (var i = 0; i < S.bookmarkIndex.folderEntries.length; i++) {
+				var entry = S.bookmarkIndex.folderEntries[i];
+				if (entry.fingerprint === ref.fingerprint)
+					candidates.push(entry);
+			}
 		}
 		if (candidates.length > 1 && ref.title) {
 			var titled = candidates.filter(function(entry) {
