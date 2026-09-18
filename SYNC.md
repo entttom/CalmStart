@@ -61,3 +61,25 @@ Recommended checks:
 - Import/export from this branch includes a portable layout payload.
 
 Sync diagnostics are visible under `Options -> Advanced -> Development / Sync`.
+
+
+## Sync diagnostics
+
+The Advanced tab contains a `Sync diagnostics` section intended for testing and support. It shows:
+
+- Current sync health (`OK`, `Pending`, `Offline`, or `Error`)
+- Browser sync availability, device ID, layout revision and layout hash
+- Last sync activity, last successful upload and last remote update/device
+- Pending local changes, number of remote layout candidates and sync storage usage
+- Unresolved portable bookmark references
+- Backup/conflict counts and the last storage error
+- An in-memory event log containing the last 50 events for the current tab
+
+The controls provide:
+
+- **Sync now** - flushes a pending layout write and refreshes sync diagnostics.
+- **Reload remote state** - rereads synchronized settings/layout and applies the current winner.
+- **Restore previous layout** - republishes the latest local recovery backup.
+- **Copy diagnostics** - copies a support-friendly text report including recent events.
+
+Successful sync operations are intentionally not spammed to the browser console. The console remains useful for storage/runtime warnings and initialization failures.
