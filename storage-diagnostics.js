@@ -380,6 +380,25 @@
 		S.updateDevelopmentInfo();
 	};
 
+	if (chrome.storage && chrome.storage.onChanged) {
+		chrome.storage.onChanged.addListener(function(changes, areaName) {
+			if (areaName !== 'sync') return;
+			var remoteDevices = [];
+			Object.keys(changes || {}).forEach(function(key) {
+				var incoming = changes[key] && changes[key].newValue;
+				if (incoming && incoming.updatedBy && incoming.updatedBy !== S.meta.deviceId &&
+					remoteDevices.indexOf(incoming.updatedBy) < 0)
+					remoteDevices.push(incoming.updatedBy);
+			});
+			if (!remoteDevices.length) return;
+			var d = S.ensureDiagnosticsMeta();
+			d.lastRemoteUpdateAt = S.now();
+			d.lastRemoteDevice = remoteDevices[remoteDevices.length - 1];
+			S.recordDiagnosticEvent('remote change received', 'info', remoteDevices.join(', '));
+			S.persistLocalSoon();
+		});
+	}
+
 	window.addEventListener('online', function() {
 		S.recordDiagnosticEvent('browser is online');
 		S.refreshDiagnosticSnapshot();
