@@ -41,7 +41,7 @@
 		d.lastErrorAt = S.now();
 		if (areaName === 'sync') {
 			S.syncAvailable = false;
-			S.persistLocalSoon();
+			if (!S.initializing) S.persistLocalSoon();
 		}
 		S.recordDiagnosticEvent('storage ' + operation + ' failed', 'error', d.lastError);
 	};
@@ -57,7 +57,7 @@
 					d.remoteLayoutCount = S.layoutCandidates(payload).length;
 			}
 			S.scheduleDiagnosticUsageRefresh();
-			S.persistLocalSoon();
+			if (!S.initializing) S.persistLocalSoon();
 		}
 		S.updateDevelopmentInfo();
 	};
@@ -119,7 +119,7 @@
 		d.unresolvedBookmarks = unresolved.slice(0, 10);
 		if (unresolved.length)
 			S.recordDiagnosticEvent('bookmark references unresolved', 'warning', unresolved.join('; '));
-		S.persistLocalSoon();
+		if (!S.initializing) S.persistLocalSoon();
 		return originalResolvePortableLayout(columns);
 	};
 
