@@ -67,14 +67,19 @@ var HumbleSync = (function() {
 			try {
 				area.get(keys, function(result) {
 					if (chrome.runtime && chrome.runtime.lastError) {
-						console.warn('Humble storage get failed:', chrome.runtime.lastError.message);
+						var message = chrome.runtime.lastError.message;
+						console.warn('Humble storage get failed:', message);
+						if (S.noteStorageError) S.noteStorageError('get', area === S.syncArea ? 'sync' : 'local', message);
 						resolve({});
 						return;
 					}
-					resolve(result || {});
+					var data = result || {};
+					if (S.noteStorageSuccess) S.noteStorageSuccess('get', area === S.syncArea ? 'sync' : 'local', data);
+					resolve(data);
 				});
 			} catch (error) {
 				console.warn('Humble storage get failed:', error);
+				if (S.noteStorageError) S.noteStorageError('get', area === S.syncArea ? 'sync' : 'local', error.message || error);
 				resolve({});
 			}
 		});
@@ -85,14 +90,18 @@ var HumbleSync = (function() {
 			try {
 				area.set(values, function() {
 					if (chrome.runtime && chrome.runtime.lastError) {
-						console.warn('Humble storage set failed:', chrome.runtime.lastError.message);
+						var message = chrome.runtime.lastError.message;
+						console.warn('Humble storage set failed:', message);
+						if (S.noteStorageError) S.noteStorageError('set', area === S.syncArea ? 'sync' : 'local', message);
 						resolve(false);
 						return;
 					}
+					if (S.noteStorageSuccess) S.noteStorageSuccess('set', area === S.syncArea ? 'sync' : 'local', values);
 					resolve(true);
 				});
 			} catch (error) {
 				console.warn('Humble storage set failed:', error);
+				if (S.noteStorageError) S.noteStorageError('set', area === S.syncArea ? 'sync' : 'local', error.message || error);
 				resolve(false);
 			}
 		});
