@@ -1,5 +1,12 @@
 'use strict';
 
+function requiresTabApi(url) {
+	var match = /^([a-z][a-z0-9+.-]*):/i.exec(String(url || ''));
+	if (!match) return false;
+	var scheme = match[1].toLowerCase();
+	return ['http', 'https', 'mailto', 'tel'].indexOf(scheme) < 0;
+}
+
 // render a single bookmark node
 function render(node, target) {
 	if (node.description == 'separator' || node.type == 'separator') {
@@ -44,9 +51,8 @@ function render(node, target) {
 				return false;
 			};
 		}
-		// fix opening chrome:// and file:/// urls
-		var urlStart = url.substring(0, 6);
-		if (urlStart === 'chrome' || urlStart === 'file:/'){
+		// Browser-internal and other non-web schemes need the tabs API instead of normal anchor navigation.
+		if (requiresTabApi(url)) {
 			a.onclick = function(e) {
 				openLink(node, newtab || (e.ctrlKey ? 2 : 0));
 				return false;
@@ -56,7 +62,7 @@ function render(node, target) {
 					openLink(node, 2);
 					return false;
 				}
-			}
+			};
 		}
 	} else if (!node.children)
 		a.style.pointerEvents = 'none';
@@ -968,14 +974,19 @@ function openLinks(node) {
 // opens given node
 function openLink(node, newtab) {
 	var url = node.url;
-	if (url) {
-		chrome.tabs.getCurrent(function(tab) {
-			if (newtab)
-				chrome.tabs.create({url: url, active: (newtab == 1), openerTabId: tab.id});
-			else
-				chrome.tabs.update(tab.id, {url: url});
-		});
-	}
+	if (!url) return;
+	chrome.tabs.getCurrent(function(tab) {
+		var done = function() {
+			if (chrome.runtime && chrome.runtime.lastError)
+				console.warn('Could not open URL:', url, chrome.runtime.lastError.message);
+		};
+		if (newtab)
+			chrome.tabs.create({url: url, active: (newtab == 1), openerTabId: tab && tab.id}, done);
+		else if (tab && tab.id != null)
+			chrome.tabs.update(tab.id, {url: url}, done);
+		else
+			chrome.tabs.create({url: url, active: true}, done);
+	});
 }
 
 var columns; // columns[x][y] = id
