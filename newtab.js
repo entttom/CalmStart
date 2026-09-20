@@ -1276,6 +1276,7 @@ var config = {
 	shadow_color: '#57b0ff',
 	background_image_file: '',
 	background_image: '',
+	background_refresh_minutes: 0,
 	background_align: 'left top',
 	background_repeat: 'repeat',
 	background_size: 'auto',
@@ -1456,6 +1457,8 @@ function setConfig(key, value) {
 		}
 	}
 	onChange(key, value);
+	if ((key == 'background_image' || key == 'background_refresh_minutes') && window.HumbleRemoteBackground)
+		HumbleRemoteBackground.restart();
 	if (getConfig('settings_match_theme') && ['font_color','background_color','highlight_color','highlight_font_color','shadow_color'].indexOf(key) >= 0)
 		onChange('settings_match_theme');
 	return value;
