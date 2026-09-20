@@ -856,11 +856,14 @@ function verifyColumns() {
 		}
 	}
 
-	// add missing root items
+	// add missing root items unless this named layout is curated
+	var curatedLayout = window.HumbleNamedLayouts && HumbleNamedLayouts.isCurated && HumbleNamedLayouts.isCurated();
 	var column = columns[0];
-	for (var i = 0; i < missing.length; i++) {
-		if (getConfig('show_' + missing[i]) != false)
-			column.push(missing[i]);
+	if (!curatedLayout) {
+		for (var i = 0; i < missing.length; i++) {
+			if (getConfig('show_' + missing[i]) != false)
+				column.push(missing[i]);
+		}
 	}
 
 	// populate coordinate map
