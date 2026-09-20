@@ -343,6 +343,8 @@ function getMenuItems(node) {
 		});
 	if (Number(node.id) && window.HumbleBookmarkEditor)
 		items = items.concat(HumbleBookmarkEditor.folderMenuItems(node));
+	if (Number(node.id) && window.HumbleIconSettings)
+		items = items.concat(HumbleIconSettings.folderMenuItems(node));
 	if (Number(node.id))
 		items.push({
 			label: 'Edit bookmarks',
@@ -736,28 +738,37 @@ function setClass(target, node, isopen) {
 
 // gets best icon for a node
 function getIcon(node) {
+	if (window.HumbleIconSettings) {
+		var custom = HumbleIconSettings.customIconElement(node);
+		if (custom) return custom;
+	}
+
 	var url = null,
-		url2x = null;
+		url2x = null,
+		displaySize = Number(getConfig('icon_size')) || 16,
+		highQuality = !!getConfig('high_quality_icons'),
+		requestSize = highQuality ? Math.max(displaySize * 2, 32) : displaySize;
 	if (node.icons) {
 		var size;
 		for (var i in node.icons) {
 			var iconInfo = node.icons[i];
-			if (iconInfo.url && (!size || (iconInfo.size < size && iconInfo.size > 15))) {
+			if (iconInfo.url && (!size || (iconInfo.size < size && iconInfo.size >= displaySize))) {
 				url = iconInfo.url;
-				if (iconInfo.size > 31) url2x = iconInfo.url;
+				if (iconInfo.size >= displaySize * 2) url2x = iconInfo.url;
 				size = iconInfo.size;
 			}
 		}
 	} else if (node.icon) {
 		url = node.icon;
 	} else if (node.url) {
-		url = `/_favicon/?pageUrl=${encodeURIComponent(node.url)}&size=16`;
-		url2x = `/_favicon/?pageUrl=${encodeURIComponent(node.url)}&size=32`;
+		url = '/_favicon/?pageUrl=' + encodeURIComponent(node.url) + '&size=' + requestSize;
+		if (highQuality)
+			url2x = '/_favicon/?pageUrl=' + encodeURIComponent(node.url) + '&size=' + Math.min(requestSize * 2, 128);
 	}
 
 	var icon = document.createElement(url ? 'img' : 'div');
 	icon.className = 'icon';
-	icon.src = url;
+	if (url) icon.src = url;
 	if (url2x) icon.srcset = url2x + ' 2x';
 	icon.alt = ' ';
 	return icon;
@@ -1175,7 +1186,10 @@ var config = {
 	number_recent: 10,
 	sort_alpha: 0,
 	reverse_recent: 0,
-	dark_mode: 0
+	dark_mode: 0,
+	show_icons: 1,
+	icon_size: 16,
+	high_quality_icons: 1
 };
 
 // color theme values
@@ -1279,7 +1293,7 @@ function setConfig(key, value) {
 		value = (theme.hasOwnProperty(key) ? theme[key] : config[key]);
 	}
 	// special case settings
-	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key.substring(0,6) == 'number')
+	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key == 'icon_size' || key == 'high_quality_icons' || key.substring(0,6) == 'number')
 		loadColumns();
 	else if (key == 'theme') {
 		theme = themes[value];
@@ -1367,6 +1381,10 @@ function getStyle(key, value) {
 			if (Number(value) === 2) return 'body { background-color:#17191c !important; color:#e8e8e8 !important; } #main a { color:#d7d9dc !important; } #main a:hover { color:#fff !important; background-color:#2b3138 !important; box-shadow:0 0 7px #566b7a !important; } #options, #options .section, .menu, .bookmark-search-panel, .bookmark-editor-dialog, .column-settings-dialog { background-color:#202328 !important; color:#eee !important; border-color:#444 !important; } #options_nav { background-color:#191b1f !important; border-color:#444 !important; } #options_nav a.current { background-color:#202328 !important; border-color:#444 !important; } input, select, textarea, button { background-color:#2a2e34; color:#eee; border-color:#555; } #bookmark_search_input { background:#2a2e34; color:#eee; border-color:#555; } .bookmark-search-result.selected { background:#293846; } #layout_switcher_select, #layout_switcher button { background:rgba(32,35,40,.95); color:#eee; border-color:#555; }';
 			if (Number(value) === 1) return '@media (prefers-color-scheme: dark) { body { background-color:#17191c !important; color:#e8e8e8 !important; } #main a { color:#d7d9dc !important; } #main a:hover { color:#fff !important; background-color:#2b3138 !important; box-shadow:0 0 7px #566b7a !important; } #options, #options .section, .menu, .bookmark-search-panel, .bookmark-editor-dialog, .column-settings-dialog { background-color:#202328 !important; color:#eee !important; border-color:#444 !important; } #options_nav { background-color:#191b1f !important; border-color:#444 !important; } #options_nav a.current { background-color:#202328 !important; border-color:#444 !important; } input, select, textarea, button { background-color:#2a2e34; color:#eee; border-color:#555; } #bookmark_search_input { background:#2a2e34; color:#eee; border-color:#555; } .bookmark-search-result.selected { background:#293846; } #layout_switcher_select, #layout_switcher button { background:rgba(32,35,40,.95); color:#eee; border-color:#555; } }';
 			return null;
+		case 'show_icons':
+			return value ? null : '.icon { display: none !important; }';
+		case 'icon_size':
+			return '.icon { width: ' + value + 'px; height: ' + value + 'px; }';
 		default:
 			return null;
 	}
