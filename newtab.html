@@ -62,6 +62,12 @@
 			<option value="google">Google</option>
 			<option value="bing">Bing</option>
 		</select></label>
+		<label><span>Weather</span><input id="options_weather_enabled" type="checkbox"/></label>
+		<label class="subopt"><span>Location</span><input id="options_weather_location" type="text" placeholder="Vienna"/></label>
+		<label class="subopt"><span>Units</span><select id="options_weather_units">
+			<option value="celsius">°C</option>
+			<option value="fahrenheit">°F</option>
+		</select></label>
 	</fieldset>
 	</div><div class="section">
 	<fieldset>
@@ -260,6 +266,7 @@
 <script src="feature-device-controls.js"></script>
 <script src="feature-live-background.js"></script>
 <script src="feature-remote-background.js"></script>
+<script src="feature-weather.js"></script>
 <script src="feature-history.js"></script>
 <script src="feature-ui-controls.js"></script>
 <script src="feature-hotkeys.js"></script>
