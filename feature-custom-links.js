@@ -93,11 +93,18 @@
 
 	function attachLink(node, anchor) {
 		if (!node || !node.customLinkId || !anchor) return;
+		if (window.HumbleHotkeys) HumbleHotkeys.decorate(node, anchor);
 		anchor.oncontextmenu = function(event) {
-			renderMenu([
-				{ label: 'Edit custom link…', action: function() { editLink(node.customLinkId); } },
-				{ label: 'Delete custom link…', action: function() { deleteLink(node.customLinkId); } }
-			], event.pageX, event.pageY);
+			var items = [
+				{ label: 'Edit custom link…', action: function() { editLink(node.customLinkId); } }
+			];
+			if (window.HumbleHotkeys) {
+				items.push(null);
+				items = items.concat(HumbleHotkeys.menuItems(node));
+			}
+			items.push(null);
+			items.push({ label: 'Delete custom link…', action: function() { deleteLink(node.customLinkId); } });
+			renderMenu(items, event.pageX, event.pageY);
 			return false;
 		};
 	}
