@@ -101,7 +101,9 @@
 		var info = weatherLabel(data.current.weather_code);
 		var suffix = units() === 'fahrenheit' ? '°F' : '°C';
 		el.textContent = info[0] + ' ' + Math.round(Number(data.current.temperature_2m)) + suffix + ' · ' + (data.locationName || locationText());
-		el.title = info[1] + ' · ' + (data.locationName || locationText()) + ' · Refresh weather';
+		var condition = window.HumbleI18n && HumbleI18n.t ? HumbleI18n.t('Condition: ' + info[1]) : info[1];
+		var refreshLabel = window.HumbleI18n && HumbleI18n.t ? HumbleI18n.t('Refresh weather') : 'Refresh weather';
+		el.title = condition + ' · ' + (data.locationName || locationText()) + ' · ' + refreshLabel;
 		el.hidden = false;
 	}
 
