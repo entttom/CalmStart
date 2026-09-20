@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Humble New Tab Page"
+  },
+  "extensionShortName": {
+    "message": "HNTP"
+  },
+  "extensionDescription": {
+    "message": "Anpassbare Neuer-Tab-Seite mit Lesezeichen, Apps, meistbesuchten Seiten und kürzlich geschlossenen Tabs."
+  }
+}
