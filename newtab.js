@@ -82,6 +82,8 @@ function render(node, target) {
 
 	} else if (node.id == 'apps')
 		enableDragFolder(node, a);
+	else if (node.dismissRecentKey && window.HumbleRecentControls)
+		HumbleRecentControls.attach(node, a);
 	else if (node.customLinkId && window.HumbleCustomLinks)
 		HumbleCustomLinks.attachLink(node, a);
 	else if (url && window.HumbleBookmarkEditor && HumbleBookmarkEditor.isEditableBookmark(node))
@@ -352,13 +354,16 @@ function getMenuItems(node) {
 				openLinks(node);
 			}
 		});
-	if (node.id == 'closed')
+	if (node.id == 'closed') {
 		items.push({
 			label: 'Clear browsing data',
 			action: function() {
 				openLink({ url: 'chrome://settings/clearBrowserData' }, 1);
 			}
 		});
+		if (window.HumbleRecentControls)
+			items.push({ label: 'Restore hidden items', action: HumbleRecentControls.clearDismissed });
+	}
 	if (node.id == 'devices')
 		items.push({
 			label: 'History',
@@ -1117,17 +1122,21 @@ function removeRow(xpos, ypos) {
 // get recently closed tabs
 function getClosed(callback) {
 	var maxResults = getConfig('number_closed');
-	chrome.sessions.getRecentlyClosed({ maxResults: maxResults }, function(sessions) {
+	chrome.sessions.getRecentlyClosed({ maxResults: Math.min(maxResults + 25, 25) }, function(sessions) {
 		var nodes = [];
-		for (var i = 0; i < sessions.length && i < maxResults; i++) {
+		for (var i = 0; i < sessions.length && nodes.length < maxResults; i++) {
 			(function(session) {
 				if (session.window && session.window.tabs.length == 1)
 					session.tab = session.window.tabs[0];
+
+				var dismissKey = window.HumbleRecentControls ? HumbleRecentControls.sessionKey(session) : null;
+				if (dismissKey && HumbleRecentControls.isDismissed(dismissKey)) return;
 
 				nodes.push({
 					title: session.tab ? session.tab.title : session.window.tabs.length + ' Tabs',
 					url: session.tab ? session.tab.url : null,
 					className: session.window ? 'window' : null,
+					dismissRecentKey: dismissKey,
 					action: function() {
 						chrome.sessions.restore(session.window ? session.window.sessionId : session.tab.sessionId, function(session) {
 							refreshClosed();
