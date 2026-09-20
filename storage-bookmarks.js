@@ -74,8 +74,27 @@
 		return index;
 	};
 
+	S.PLACEMENT_PREFIX = 'dup:';
+	S.parsePlacementId = function(id) {
+		id = String(id || '');
+		if (id.indexOf(S.PLACEMENT_PREFIX) !== 0) return null;
+		var rest = id.substring(S.PLACEMENT_PREFIX.length);
+		var split = rest.indexOf(':');
+		if (split < 1) return null;
+		return { token: rest.substring(0, split), id: rest.substring(split + 1) };
+	};
+	S.makePlacementId = function(id, token) {
+		token = token || S.hashString(String(S.now()) + Math.random());
+		return S.PLACEMENT_PREFIX + token + ':' + String(id);
+	};
+
 	S.makePortableRef = function(id) {
 		id = String(id);
+		var placement = S.parsePlacementId(id);
+		if (placement) {
+			var target = S.makePortableRef(placement.id);
+			return target ? { kind: 'placement', placement: placement.token, target: target } : null;
+		}
 		if (S.SPECIAL_IDS.indexOf(id) >= 0) return { kind: 'special', id: id };
 		var entry = S.bookmarkIndex && S.bookmarkIndex.byId[id];
 		if (!entry) return null;
@@ -93,6 +112,10 @@
 
 	S.resolvePortableRef = function(ref) {
 		if (!ref) return null;
+		if (ref.kind === 'placement') {
+			var targetId = S.resolvePortableRef(ref.target);
+			return targetId ? S.makePlacementId(targetId, ref.placement) : null;
+		}
 		if (ref.kind === 'special' && S.SPECIAL_IDS.indexOf(ref.id) >= 0) return ref.id;
 		if (ref.kind !== 'bookmark' || !S.bookmarkIndex) return null;
 
