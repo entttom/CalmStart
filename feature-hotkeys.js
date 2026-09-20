@@ -121,6 +121,10 @@
 		if (title.indexOf(suffix) < 0)
 			anchor.title = title ? title + ' — ' + suffix : suffix;
 		anchor.dataset.hotkey = existing.item.label;
+		var hint = document.createElement('span');
+		hint.className = 'hotkey-hint';
+		hint.textContent = '⌥' + existing.item.label;
+		anchor.appendChild(hint);
 	}
 
 	function attachOnly(node, anchor) {
