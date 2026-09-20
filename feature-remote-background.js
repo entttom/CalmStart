@@ -57,7 +57,9 @@
 		}
 	}
 
-	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restart);
+	var ready = window.HumbleStorage && window.HumbleStorage.ready;
+	if (ready && typeof ready.then === 'function') ready.then(restart);
+	else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restart);
 	else restart();
 
 	window.HumbleRemoteBackground = {
