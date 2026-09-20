@@ -760,3 +760,26 @@ input[type="file"]::-webkit-file-upload-button {
 	margin: .5em 0 0;
 	text-align: right;
 }
+
+
+/* Live local background */
+.live-background-controls {
+	margin: .8em 0 1em 1.4em;
+	padding: .8em;
+	border: 1px solid rgba(127,127,127,.35);
+	border-radius: 5px;
+}
+#live_background_status {
+	display: block;
+	margin-bottom: .6em;
+	font-size: .82em;
+	color: #777;
+}
+#live_background_status.error {
+	color: #b00020;
+}
+.live-background-controls > div {
+	display: flex;
+	gap: .4em;
+	justify-content: flex-end;
+}
