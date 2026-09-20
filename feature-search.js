@@ -97,6 +97,33 @@
 		return matches.slice(0, MAX_RESULTS).map(function(match) { return match.item; });
 	}
 
+	function webSearchEngine() {
+		var engine = localStorage.getItem('options.web_search_engine') || 'off';
+		var engines = {
+			duckduckgo: { name: 'DuckDuckGo', base: 'https://duckduckgo.com/?q=' },
+			google: { name: 'Google', base: 'https://www.google.com/search?q=' },
+			bing: { name: 'Bing', base: 'https://www.bing.com/search?q=' }
+		};
+		return engines[engine] || null;
+	}
+
+	function displayResults(query) {
+		var results = search(query);
+		var clean = String(query || '').trim();
+		var engine = webSearchEngine();
+		if (clean && engine) {
+			results = results.slice(0);
+			results.push({
+				id: 'web-search',
+				title: 'Search the web for “' + clean + '”',
+				url: engine.base + encodeURIComponent(clean),
+				path: 'Web search · ' + engine.name,
+				isWebSearch: true
+			});
+		}
+		return results;
+	}
+
 	function getOpenMode(event) {
 		if (event && (event.metaKey || event.ctrlKey || event.button === 1)) return 2;
 		var stored = localStorage.getItem('options.newtab');
@@ -186,13 +213,13 @@
 
 	function currentResults() {
 		var input = document.getElementById('bookmark_search_input');
-		return input ? search(input.value) : [];
+		return input ? displayResults(input.value) : [];
 	}
 
 	function updateSearch() {
 		var input = document.getElementById('bookmark_search_input');
 		if (!input) return;
-		renderResults(search(input.value), input.value);
+		renderResults(displayResults(input.value), input.value);
 	}
 
 	function selectResult(indexToSelect) {
@@ -356,6 +383,7 @@
 		rebuild: buildIndex,
 		open: openSearch,
 		close: closeSearch,
-		search: search
+		search: search,
+		displayResults: displayResults
 	};
 })();
