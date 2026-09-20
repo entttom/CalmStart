@@ -239,6 +239,24 @@
 
 	loadCache();
 
+	function installControls() {
+		var clear = document.getElementById('clear_favicon_cache');
+		if (clear && !clear.dataset.bound) {
+			clear.dataset.bound = '1';
+			clear.onclick = function() {
+				clear.disabled = true;
+				clearFaviconCache().then(function() {
+					clear.disabled = false;
+					if (typeof window.renderColumns === 'function') window.renderColumns();
+			});
+				return false;
+			};
+		}
+	}
+
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installControls);
+	else installControls();
+
 	window.HumbleIconSettings = {
 		customIconElement: customIconElement,
 		setFolderIcon: setFolderIcon,
