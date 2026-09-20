@@ -1278,6 +1278,8 @@ var config = {
 	show_icons: 1,
 	icon_size: 16,
 	high_quality_icons: 1,
+	icon_contrast: 0,
+	icon_rendering: 'auto',
 	text_align: 'left',
 	center_single_column: 0,
 	cache_favicons: 1,
@@ -1491,6 +1493,12 @@ function getStyle(key, value) {
 			return value ? null : '.icon { display: none !important; }';
 		case 'icon_size':
 			return '.icon { width: ' + value + 'px; height: ' + value + 'px; }';
+		case 'icon_contrast':
+			if (Number(value) === 2) return '#main img.icon, .bookmark-search-icon { filter: drop-shadow(0 0 1px rgba(255,255,255,.95)) drop-shadow(0 0 2px rgba(0,0,0,.9)); }';
+			if (Number(value) === 1) return '#main img.icon, .bookmark-search-icon { filter: drop-shadow(0 0 1px rgba(255,255,255,.85)) drop-shadow(0 0 1px rgba(0,0,0,.65)); }';
+			return null;
+		case 'icon_rendering':
+			return '#main img.icon, .bookmark-search-icon { image-rendering: ' + value + '; }';
 		default:
 			return null;
 	}
@@ -1551,6 +1559,8 @@ function onChange(key, value) {
 
 	if ((key == 'show_clock' || key == 'clock_24h') && window.HumbleClock)
 		HumbleClock.refresh();
+	if ((key == 'font' || key == 'font_size' || key == 'font_weight') && window.HumbleFontPreview)
+		HumbleFontPreview.refresh();
 
 	// update options panel
 	if (!settingsInitialized)
@@ -1781,10 +1791,12 @@ function initSettings() {
 					var font = fonts[i].fontId;
 					var option = document.createElement('option');
 					option.innerText = font;
+					option.style.fontFamily = '"' + font.replace(/"/g, '') + '"';
 					if (font == getConfig('font'))
 						option.selected = 'selected';
 					select.appendChild(option);
 				}
+				if (window.HumbleFontPreview) HumbleFontPreview.refresh();
 			});
 		}
 	});
