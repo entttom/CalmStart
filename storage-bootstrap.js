@@ -131,25 +131,26 @@
 
 	S.initialize = function() {
 		var legacySnapshot = S.snapshotLegacyStorage();
+		var localKeys = [S.LOCAL_VALUES_KEY, S.LOCAL_META_KEY, S.BOOKMARK_INDEX_KEY, S.BOOKMARK_INDEX_DIRTY_KEY];
 		return Promise.all([
-			S.storageGet(S.localArea, [S.LOCAL_VALUES_KEY, S.LOCAL_META_KEY]),
-			S.storageGet(S.syncArea, null),
-			S.getBookmarkTree()
+			S.storageGet(S.localArea, localKeys),
+			S.storageGet(S.syncArea, null)
 		]).then(function(results) {
 			var localData = results[0] || {};
 			var syncData = results[1] || {};
-			S.bookmarkIndex = S.buildBookmarkIndex(results[2] || []);
-			return S.initialSettingsAndMigration(legacySnapshot, localData, syncData)
-				.then(function() { return S.buildInitialCache(legacySnapshot, syncData); })
-				.then(function() {
-					S.meta.lastSyncAt = S.meta.lastSyncAt || (S.syncArea ? S.now() : null);
-					S.initializing = false;
-					S.initialized = true;
-					S.installLegacyAdapter();
-					S.listenForRemoteChanges();
-					S.persistLocalSoon();
-					S.attachDevelopmentControls();
-				});
+			return S.ensureBookmarkIndex(localData).then(function() {
+				return S.initialSettingsAndMigration(legacySnapshot, localData, syncData)
+					.then(function() { return S.buildInitialCache(legacySnapshot, syncData); });
+			}).then(function() {
+				S.meta.lastSyncAt = S.meta.lastSyncAt || (S.syncArea ? S.now() : null);
+				S.initializing = false;
+				S.initialized = true;
+				S.installLegacyAdapter();
+				S.listenForRemoteChanges();
+				S.installBookmarkIndexListeners();
+				S.persistLocalSoon();
+				S.attachDevelopmentControls();
+			});
 		}).catch(function(error) {
 			S.fallbackToLegacy(error);
 		});
