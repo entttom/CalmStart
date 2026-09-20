@@ -6,6 +6,9 @@
 	var selectedIndex = -1;
 	var rebuildTimer = null;
 	var initialized = false;
+	var indexLoaded = false;
+	var indexLoading = null;
+	var indexDirty = true;
 
 	function normalize(value) {
 		return String(value || '').toLocaleLowerCase();
@@ -38,7 +41,8 @@
 
 	function buildIndex() {
 		if (!chrome.bookmarks || !chrome.bookmarks.getTree) return Promise.resolve();
-		return new Promise(function(resolve) {
+		if (indexLoading) return indexLoading;
+		indexLoading = new Promise(function(resolve) {
 			chrome.bookmarks.getTree(function(tree) {
 				if (chrome.runtime && chrome.runtime.lastError) {
 					console.warn('Humble bookmark search index failed:', chrome.runtime.lastError.message);
@@ -48,13 +52,23 @@
 				index = [];
 				var roots = tree || [];
 				for (var i = 0; i < roots.length; i++) addNode(roots[i], []);
-				updateSearch();
+				indexLoaded = true;
+				indexDirty = false;
 				resolve();
 			});
+		}).then(function() {
+			indexLoading = null;
+			updateSearch();
+		}, function(error) {
+			indexLoading = null;
+			throw error;
 		});
+		return indexLoading;
 	}
 
 	function scheduleRebuild() {
+		indexDirty = true;
+		if (!indexLoaded) return;
 		if (rebuildTimer) clearTimeout(rebuildTimer);
 		rebuildTimer = setTimeout(function() {
 			rebuildTimer = null;
@@ -249,7 +263,14 @@
 		overlay.hidden = false;
 		document.body.classList.add('bookmark-search-open');
 		input.value = '';
-		updateSearch();
+		if (!indexLoaded || indexDirty) {
+			var list = document.getElementById('bookmark_search_results');
+			var status = document.getElementById('bookmark_search_status');
+			while (list && list.firstChild) list.removeChild(list.firstChild);
+			if (status) status.textContent = 'Loading bookmarks…';
+			if (list) list.appendChild(createElement('li', 'bookmark-search-empty', 'Building search index…'));
+			buildIndex();
+		} else updateSearch();
 		setTimeout(function() {
 			input.focus();
 			input.select();
@@ -368,10 +389,10 @@
 			if (chrome.bookmarks.onChanged) chrome.bookmarks.onChanged.addListener(scheduleRebuild);
 			if (chrome.bookmarks.onMoved) chrome.bookmarks.onMoved.addListener(scheduleRebuild);
 			if (chrome.bookmarks.onRemoved) chrome.bookmarks.onRemoved.addListener(scheduleRebuild);
+			if (chrome.bookmarks.onChildrenReordered) chrome.bookmarks.onChildrenReordered.addListener(scheduleRebuild);
 			if (chrome.bookmarks.onImportEnded) chrome.bookmarks.onImportEnded.addListener(scheduleRebuild);
 		}
 
-		buildIndex();
 	}
 
 	var ready = window.HumbleStorage && window.HumbleStorage.ready;
