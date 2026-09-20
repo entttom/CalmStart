@@ -130,6 +130,9 @@
 	};
 
 	S.initialize = function() {
+		var startupStartedAt = (window.performance && performance.now) ? performance.now() : Date.now();
+		var indexStartedAt = startupStartedAt;
+		S.startupMetrics = { initMs: null, indexMs: null, bookmarkIndexSource: 'pending', folderCount: 0 };
 		var legacySnapshot = S.snapshotLegacyStorage();
 		var localKeys = [S.LOCAL_VALUES_KEY, S.LOCAL_META_KEY, S.BOOKMARK_INDEX_KEY, S.BOOKMARK_INDEX_DIRTY_KEY];
 		return Promise.all([
@@ -138,7 +141,11 @@
 		]).then(function(results) {
 			var localData = results[0] || {};
 			var syncData = results[1] || {};
-			return S.ensureBookmarkIndex(localData).then(function() {
+			return S.ensureBookmarkIndex(localData).then(function(index) {
+				var afterIndex = (window.performance && performance.now) ? performance.now() : Date.now();
+				S.startupMetrics.indexMs = Math.round((afterIndex - indexStartedAt) * 10) / 10;
+				S.startupMetrics.bookmarkIndexSource = index && index.source || 'unknown';
+				S.startupMetrics.folderCount = index && index.folderEntries ? index.folderEntries.length : 0;
 				return S.initialSettingsAndMigration(legacySnapshot, localData, syncData)
 					.then(function() { return S.buildInitialCache(legacySnapshot, syncData); });
 			}).then(function() {
@@ -148,6 +155,8 @@
 				S.installLegacyAdapter();
 				S.listenForRemoteChanges();
 				S.installBookmarkIndexListeners();
+				var startupFinishedAt = (window.performance && performance.now) ? performance.now() : Date.now();
+				S.startupMetrics.initMs = Math.round((startupFinishedAt - startupStartedAt) * 10) / 10;
 				S.persistLocalSoon();
 				S.attachDevelopmentControls();
 			});
