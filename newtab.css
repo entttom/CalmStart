@@ -993,3 +993,44 @@ body.background-only #humble_weather {
 	color: #777;
 	font-size: .72em;
 }
+
+
+/* Link shortcut manager */
+.hotkey-help {
+	margin: .4em 0 .8em 1.4em;
+	color: #777;
+	font-size: .82em;
+	line-height: 1.4;
+}
+#hotkey_list {
+	margin: 0 0 .5em 1.4em;
+}
+.hotkey-row {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	gap: .6em;
+	align-items: center;
+	padding: .3em 0;
+}
+.hotkey-row kbd {
+	min-width: 5.8em;
+	padding: .2em .45em;
+	border: 1px solid rgba(127,127,127,.45);
+	border-radius: 4px;
+	font: inherit;
+	font-size: .82em;
+	text-align: center;
+}
+.hotkey-target {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.hotkey-empty {
+	padding: .4em 0;
+	color: #777;
+}
+.hotkey-actions {
+	margin-left: 1.4em;
+	text-align: right;
+}
