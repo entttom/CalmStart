@@ -1275,6 +1275,7 @@ var config = {
 	sort_alpha: 0,
 	reverse_recent: 0,
 	dark_mode: 0,
+	settings_follow_theme: 0,
 	show_icons: 1,
 	icon_size: 16,
 	high_quality_icons: 1,
@@ -1437,9 +1438,9 @@ function getStyle(key, value) {
 		case 'text_align':
 			return '#main a { text-align: ' + value + '; }';
 		case 'font_color':
-			return '#main a { color: ' + value + '; }';
+			return ':root { --hntp-font-color: ' + value + '; } #main a { color: ' + value + '; }';
 		case 'background_color':
-			return 'body { background-color: ' + value + '; }';
+			return ':root { --hntp-background-color: ' + value + '; } body { background-color: ' + value + '; }';
 		case 'background_image':
 			return 'body { background-image: url(' + value + '); }';
 		case 'background_image_file':
@@ -1451,9 +1452,9 @@ function getStyle(key, value) {
 		case 'background_size':
 			return 'body { background-size: ' + value + '; }';
 		case 'highlight_font_color':
-			return '#main a:hover { color: ' + value + '; }';
+			return ':root { --hntp-highlight-font-color: ' + value + '; } #main a:hover { color: ' + value + '; }';
 		case 'highlight_color':
-			return '#main a:hover { background-color: ' + value + '; }';
+			return ':root { --hntp-highlight-color: ' + value + '; } #main a:hover { background-color: ' + value + '; }';
 		case 'shadow_color':
 			return '#main a:hover { box-shadow: 0 0 ' + scale(getConfig('shadow_blur'), 7, 100) + 'px ' + value + '; }';
 		case 'shadow_blur':
@@ -1485,6 +1486,8 @@ function getStyle(key, value) {
 			return value;
 		case 'auto_scale':
 			return value ? null : '#main { margin-top: 80px; width: 1000px; }';
+		case 'settings_follow_theme':
+			return value ? '#options, #options .section, .menu, .bookmark-search-panel, .bookmark-editor-dialog, .column-settings-dialog, .font-preview-dialog { background-color: var(--hntp-background-color) !important; color: var(--hntp-font-color) !important; border-color: color-mix(in srgb, var(--hntp-font-color) 30%, transparent) !important; } #options_nav { background-color: color-mix(in srgb, var(--hntp-background-color) 88%, var(--hntp-font-color) 12%) !important; color: var(--hntp-font-color) !important; } #options_nav a.current, .menu a:hover { background-color: var(--hntp-highlight-color) !important; color: var(--hntp-highlight-font-color) !important; }' : null;
 		case 'dark_mode':
 			if (Number(value) === 2) return 'body { background-color:#17191c !important; color:#e8e8e8 !important; } #main a { color:#d7d9dc !important; } #main a:hover { color:#fff !important; background-color:#2b3138 !important; box-shadow:0 0 7px #566b7a !important; } #options, #options .section, .menu, .bookmark-search-panel, .bookmark-editor-dialog, .column-settings-dialog { background-color:#202328 !important; color:#eee !important; border-color:#444 !important; } #options_nav { background-color:#191b1f !important; border-color:#444 !important; } #options_nav a.current { background-color:#202328 !important; border-color:#444 !important; } input, select, textarea, button { background-color:#2a2e34; color:#eee; border-color:#555; } #bookmark_search_input { background:#2a2e34; color:#eee; border-color:#555; } .bookmark-search-result.selected { background:#293846; } #layout_switcher_select, #layout_switcher button { background:rgba(32,35,40,.95); color:#eee; border-color:#555; }';
 			if (Number(value) === 1) return '@media (prefers-color-scheme: dark) { body { background-color:#17191c !important; color:#e8e8e8 !important; } #main a { color:#d7d9dc !important; } #main a:hover { color:#fff !important; background-color:#2b3138 !important; box-shadow:0 0 7px #566b7a !important; } #options, #options .section, .menu, .bookmark-search-panel, .bookmark-editor-dialog, .column-settings-dialog { background-color:#202328 !important; color:#eee !important; border-color:#444 !important; } #options_nav { background-color:#191b1f !important; border-color:#444 !important; } #options_nav a.current { background-color:#202328 !important; border-color:#444 !important; } input, select, textarea, button { background-color:#2a2e34; color:#eee; border-color:#555; } #bookmark_search_input { background:#2a2e34; color:#eee; border-color:#555; } .bookmark-search-result.selected { background:#293846; } #layout_switcher_select, #layout_switcher button { background:rgba(32,35,40,.95); color:#eee; border-color:#555; } }';
