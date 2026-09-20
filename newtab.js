@@ -1036,6 +1036,13 @@ function loadColumns() {
 
 // saves current column configuration to storage
 function saveColumns() {
+	if (window.HumbleSync && HumbleSync.currentPortableLayout && HumbleSync.addLayoutBackup) {
+		var beforeLayout = HumbleSync.currentPortableLayout();
+		var nextPortable = HumbleSync.portableLayoutFromColumns ? HumbleSync.portableLayoutFromColumns(columns) : [];
+		var nextHash = HumbleSync.layoutHash ? HumbleSync.layoutHash(nextPortable) : null;
+		if (beforeLayout.columns.length && beforeLayout.hash !== nextHash)
+			HumbleSync.addLayoutBackup(beforeLayout, 'local layout change');
+	}
 	// clear previous config
 	for (var x = 0; ; x++) {
 		for (var y = 0; ; y++) {
@@ -1126,19 +1133,25 @@ function getClosed(callback) {
 		var nodes = [];
 		for (var i = 0; i < sessions.length && nodes.length < maxResults; i++) {
 			(function(session) {
-				if (session.window && session.window.tabs.length == 1)
-					session.tab = session.window.tabs[0];
+				var singleWindowTab = session.window && session.window.tabs && session.window.tabs.length == 1 ? session.window.tabs[0] : null;
+				if (singleWindowTab) session.tab = singleWindowTab;
 
 				var dismissKey = window.HumbleRecentControls ? HumbleRecentControls.sessionKey(session) : null;
 				if (dismissKey && HumbleRecentControls.isDismissed(dismissKey)) return;
+				var restoreId = session.tab && session.tab.sessionId ? session.tab.sessionId : (session.window && session.window.sessionId);
 
 				nodes.push({
 					title: session.tab ? session.tab.title : session.window.tabs.length + ' Tabs',
 					url: session.tab ? session.tab.url : null,
-					className: session.window ? 'window' : null,
+					className: session.window && !singleWindowTab ? 'window' : null,
 					dismissRecentKey: dismissKey,
 					action: function() {
-						chrome.sessions.restore(session.window ? session.window.sessionId : session.tab.sessionId, function(session) {
+						if (session.tab && getConfig('newtab') == 0) {
+							if (dismissKey && window.HumbleRecentControls) HumbleRecentControls.dismiss(dismissKey);
+							openLink({ url: session.tab.url }, 0);
+							return false;
+						}
+						chrome.sessions.restore(restoreId, function() {
 							refreshClosed();
 						});
 						return false;
