@@ -85,13 +85,13 @@ Issues #95 and #104 remain partial/open: arbitrary per-domain image overrides an
 Planned direction: benchmark tree traversal/rendering first, then avoid repeated full-tree work and cache derived indexes where safe.
 
 ### Appearance and background
-- #76 Optional clock is not yet implemented
+- #76 Optional clock is implemented
 - #124 Dashboard/widget additions remain intentionally optional/future work
 - #135 Automatically refreshing an externally changed local background file needs a different file-access design
 
 ### Remaining navigation/content items
 - #101 Remove items from recent lists where browser APIs permit it
-- #126 Optional web-search engine panel
+- #126 Optional web-search engine panel is implemented inside the bookmark search palette (DuckDuckGo/Google/Bing)
 - #133 Explicit separator rows
 - #95 Arbitrary custom favicon/domain overrides
 - #104 Dedicated favicon cache
