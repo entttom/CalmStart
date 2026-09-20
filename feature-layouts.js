@@ -417,9 +417,9 @@
 		writeLayout: writeLayout
 	};
 
-	var ready = window.HumbleStorage && window.HumbleStorage.ready;
-	if (ready && typeof ready.then === 'function')
-		ready.then(initialize);
-	else
-		document.addEventListener('DOMContentLoaded', initialize);
+	window.addEventListener('load', function() {
+		var ready = window.HumbleStorage && window.HumbleStorage.ready;
+		if (ready && typeof ready.then === 'function') ready.then(initialize);
+		else initialize();
+	});
 })(HumbleSync);
