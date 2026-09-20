@@ -167,6 +167,8 @@
 		'Reset folder icon': 'Ordner-Icon zurücksetzen',
 		'Hide from Recently closed': 'Aus „Kürzlich geschlossen“ ausblenden',
 		'Restore hidden items': 'Ausgeblendete Einträge wiederherstellen',
+		'Hide device': 'Gerät ausblenden',
+		'Restore hidden devices': 'Ausgeblendete Geräte wiederherstellen',
 		'Clear browsing data': 'Browserdaten löschen',
 		'Font preview': 'Schriftvorschau',
 		'Filter fonts…': 'Schriften filtern…',
