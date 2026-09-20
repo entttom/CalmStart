@@ -1493,6 +1493,10 @@ function getStyle(key, value) {
 			return value ? null : '.icon { display: none !important; }';
 		case 'icon_size':
 			return '.icon { width: ' + value + 'px; height: ' + value + 'px; }';
+		case 'icon_backplate':
+			if (value === 'light') return 'img.icon { background-color: rgba(255,255,255,.9); box-shadow: 0 0 0 1px rgba(0,0,0,.18); border-radius: 3px; padding: 1px; }';
+			if (value === 'dark') return 'img.icon { background-color: rgba(0,0,0,.78); box-shadow: 0 0 0 1px rgba(255,255,255,.18); border-radius: 3px; padding: 1px; }';
+			return null;
 		case 'icon_contrast':
 			if (Number(value) === 2) return '#main img.icon, .bookmark-search-icon { filter: drop-shadow(0 0 1px rgba(255,255,255,.95)) drop-shadow(0 0 2px rgba(0,0,0,.9)); }';
 			if (Number(value) === 1) return '#main img.icon, .bookmark-search-icon { filter: drop-shadow(0 0 1px rgba(255,255,255,.85)) drop-shadow(0 0 1px rgba(0,0,0,.65)); }';
