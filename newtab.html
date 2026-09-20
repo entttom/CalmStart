@@ -64,6 +64,17 @@
 		</select></label>
 	</fieldset>
 	<fieldset>
+		<legend>Icons</legend>
+		<label><span>Show icons</span><input id="options_show_icons" type="checkbox"/></label>
+		<label><span>Size</span><select id="options_icon_size">
+			<option value="16">16 px</option>
+			<option value="20">20 px</option>
+			<option value="24">24 px</option>
+			<option value="32">32 px</option>
+		</select></label>
+		<label><span>High quality</span><input id="options_high_quality_icons" type="checkbox"/></label>
+	</fieldset>
+	<fieldset>
 		<legend>Colors</legend>
 		<label><span>Theme</span><select id="options_theme"></select></label>
 		<label><span>Text</span><input id="options_font_color" type="color"/></label>
@@ -178,6 +189,7 @@
 <script src="storage-diagnostics.js"></script>
 <script src="feature-bookmark-edit.js"></script>
 <script src="feature-columns.js"></script>
+<script src="feature-icons.js"></script>
 <script src="storage-bootstrap.js"></script>
 <script src="feature-search.js"></script>
 </body>
