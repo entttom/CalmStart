@@ -173,6 +173,7 @@ function renderColumns() {
 		target.removeChild(target.lastChild);
 
 	// render columns
+	target.classList.toggle('center-single-column', columns.length === 1 && !!getConfig('center_single_column'));
 	for (var i = 0; i < columns.length; i++) {
 		var column = document.createElement('div');
 		column.className = 'column';
@@ -1272,6 +1273,8 @@ var config = {
 	show_icons: 1,
 	icon_size: 16,
 	high_quality_icons: 1,
+	text_align: 'left',
+	center_single_column: 0,
 	cache_favicons: 1,
 	favicon_overrides: '{}',
 	show_clock: 0,
@@ -1389,7 +1392,7 @@ function setConfig(key, value) {
 		value = (theme.hasOwnProperty(key) ? theme[key] : config[key]);
 	}
 	// special case settings
-	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key == 'icon_size' || key == 'high_quality_icons' || key == 'cache_favicons' || key == 'favicon_overrides' || key == 'custom_open' || key.substring(0,6) == 'number')
+	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key == 'icon_size' || key == 'high_quality_icons' || key == 'cache_favicons' || key == 'favicon_overrides' || key == 'center_single_column' || key == 'custom_open' || key.substring(0,6) == 'number')
 		loadColumns();
 	else if (key == 'theme') {
 		theme = themes[value];
@@ -1424,6 +1427,8 @@ function getStyle(key, value) {
 			return '#main a { font-size: ' + (value / 10) + 'em; }';
 		case 'font_weight':
 			return '#main a { font-weight: ' + value + '; }';
+		case 'text_align':
+			return '#main a { text-align: ' + value + '; }';
 		case 'font_color':
 			return '#main a { color: ' + value + '; }';
 		case 'background_color':
