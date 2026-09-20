@@ -197,17 +197,46 @@
 		});
 	};
 
-	S.refreshDiagnosticSnapshot = function() {
-		if (!S.syncArea) {
-			S.updateDevelopmentInfo();
-			return Promise.resolve();
+	S.refreshPermissionDiagnostics = function() {
+		var d = S.ensureDiagnosticsMeta();
+		var jobs = [];
+
+		if (chrome.extension && chrome.extension.isAllowedIncognitoAccess) {
+			try {
+				jobs.push(Promise.resolve(chrome.extension.isAllowedIncognitoAccess()).then(function(value) {
+					d.incognitoAccess = !!value;
+				}).catch(function() {
+					d.incognitoAccess = null;
+				}));
+			} catch (error) {
+				d.incognitoAccess = null;
+			}
 		}
-		return Promise.all([
-			S.storageGet(S.syncArea, null).then(function(syncData) {
+
+		if (chrome.permissions && chrome.permissions.contains) {
+			jobs.push(new Promise(function(resolve) {
+				chrome.permissions.contains({ permissions: ['history'] }, function(granted) {
+					if (chrome.runtime && chrome.runtime.lastError) d.historyAccess = null;
+					else d.historyAccess = !!granted;
+					resolve();
+				});
+			}));
+		}
+
+		return Promise.all(jobs).then(function() {
+			S.updateDevelopmentInfo();
+		});
+	};
+
+	S.refreshDiagnosticSnapshot = function() {
+		var jobs = [S.refreshPermissionDiagnostics()];
+		if (S.syncArea) {
+			jobs.push(S.storageGet(S.syncArea, null).then(function(syncData) {
 				S.ensureDiagnosticsMeta().remoteLayoutCount = S.layoutCandidates(syncData).length;
-			}),
-			S.refreshSyncUsage()
-		]).then(function() {
+			}));
+			jobs.push(S.refreshSyncUsage());
+		}
+		return Promise.all(jobs).then(function() {
 			S.persistLocalSoon();
 			S.updateDevelopmentInfo();
 		});
@@ -280,6 +309,8 @@
 			'Schema: ' + S.SCHEMA_VERSION,
 			'Sync status: ' + S.syncStatus(),
 			'Browser sync: ' + (info.syncEnabled ? 'Enabled' : 'Unavailable'),
+			'Incognito access: ' + (d.incognitoAccess == null ? 'Unknown' : (d.incognitoAccess ? 'Allowed' : 'Not allowed')),
+			'History permission: ' + (d.historyAccess == null ? 'Unknown' : (d.historyAccess ? 'Granted' : 'Not granted')),
 			'Device: ' + info.deviceId,
 			'Layout revision: ' + info.layoutRevision,
 			'Layout hash: ' + current.hash,
@@ -334,6 +365,8 @@
 		var fields = {
 			dev_version: manifest.version || 'Unknown',
 			dev_sync_health: S.syncStatus(),
+			dev_incognito_access: d.incognitoAccess == null ? 'Unknown' : (d.incognitoAccess ? 'Allowed' : 'Not allowed'),
+			dev_history_access: d.historyAccess == null ? 'Unknown' : (d.historyAccess ? 'Granted' : 'Not granted'),
 			dev_last_upload: S.formatTimestamp(d.lastSuccessfulUploadAt),
 			dev_last_remote: S.formatTimestamp(d.lastRemoteUpdateAt),
 			dev_remote_device: d.lastRemoteDevice || 'None',
