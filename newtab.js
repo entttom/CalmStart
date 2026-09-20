@@ -160,6 +160,8 @@ function renderColumns() {
 
 // enables click and context menu for given folder
 function addFolderHandlers(node, a) {
+	var layoutId = node.layoutId || node.id;
+
 	// click handler
 	a.onclick = function() {
 		toggle(node, a, getChildrenFunction(node));
@@ -185,41 +187,48 @@ function addFolderHandlers(node, a) {
 		items.push({
 			label: 'Create new column',
 			action: function() {
-				addColumn([node.id]);
+				addColumn([layoutId]);
+			}
+		});
+		items.push({
+			label: 'Duplicate folder in new column',
+			action: function() {
+				columns.push([createDuplicatePlacement(node.id)]);
+				saveColumns();
 			}
 		});
 
-		if (coords[node.id]) {
-			var pos = coords[node.id];
+		if (coords[layoutId]) {
+			var pos = coords[layoutId];
 			if (pos.y > 0)
 				items.push({
 					label: 'Move folder up',
 					action: function() {
-						addRow(node.id, pos.x, pos.y - 1);
+						addRow(layoutId, pos.x, pos.y - 1);
 					}
 				});
 			if (pos.y < columns[pos.x].length - 1)
 				items.push({
 					label: 'Move folder down',
 					action: function() {
-						addRow(node.id, pos.x, pos.y + 2);
+						addRow(layoutId, pos.x, pos.y + 2);
 					}
 				});
 			if (pos.x > 0)
 				items.push({
 					label: 'Move folder left',
 					action: function() {
-						addRow(node.id, pos.x - 1);
+						addRow(layoutId, pos.x - 1);
 					}
 				});
 			if (pos.x < columns.length - 1)
 				items.push({
 					label: 'Move folder right',
 					action: function() {
-						addRow(node.id, pos.x + 1);
+						addRow(layoutId, pos.x + 1);
 					}
 				});
-			if (root.indexOf(node.id) < 0)
+			if (layoutId !== String(node.id) || root.indexOf(node.id) < 0)
 				items.push({
 					label: 'Remove folder',
 					action: function() {
@@ -242,7 +251,7 @@ function addColumnHandlers(index, ul) {
 
 	// single folder items
 	if (ids.length == 1)
-		items = getMenuItems({id: ids[0]});
+		items = getMenuItems({id: layoutBaseId(ids[0])});
 
 	// column layout items
 	if (!getConfig('lock') && columns.length > 1) {
@@ -434,7 +443,7 @@ function enableDragFolder(node, a) {
 
 	a.draggable = true;
 	a.ondragstart = function(event) {
-		dragIds = [node.id];
+		dragIds = [node.layoutId || node.id];
 		event.stopPropagation();
 		event.dataTransfer.effectAllowed = 'move copy';
 		this.classList.add('dragstart');
@@ -654,6 +663,18 @@ function getChildrenFunction(node) {
 
 // gets the subtree for given id
 function getSubTree(id, callback) {
+	var placement = parseLayoutPlacementId(id);
+	if (placement) {
+		chrome.bookmarks.getSubTree(placement.id, function(result) {
+			if (result && result[0]) {
+				var node = result[0];
+				node.layoutId = id;
+				callback([node]);
+			} else if (coords[id])
+				removeRow(coords[id].x, coords[id].y);
+		});
+		return;
+	}
 	switch(id) {
 		case 'top':
 			callback([{ title: 'Most visited', id: 'top', children: true}]);
@@ -846,6 +867,28 @@ var columns; // columns[x][y] = id
 var root; // root[] = id
 var coords; // coords[id] = {x:x, y:y}
 var special = ['apps', 'top', 'recent', 'closed', 'devices'];
+
+function parseLayoutPlacementId(id) {
+	id = String(id || '');
+	if (window.HumbleSync && HumbleSync.parsePlacementId)
+		return HumbleSync.parsePlacementId(id);
+	if (id.indexOf('dup:') !== 0) return null;
+	var rest = id.substring(4);
+	var split = rest.indexOf(':');
+	return split > 0 ? { token: rest.substring(0, split), id: rest.substring(split + 1) } : null;
+}
+
+function layoutBaseId(id) {
+	var placement = parseLayoutPlacementId(id);
+	return placement ? placement.id : String(id);
+}
+
+function createDuplicatePlacement(id) {
+	var baseId = layoutBaseId(id);
+	if (window.HumbleSync && HumbleSync.makePlacementId)
+		return HumbleSync.makePlacementId(baseId);
+	return 'dup:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + ':' + baseId;
+}
 
 // ensure root folders are included
 function verifyColumns() {
