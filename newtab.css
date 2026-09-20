@@ -783,3 +783,38 @@ input[type="file"]::-webkit-file-upload-button {
 	gap: .4em;
 	justify-content: flex-end;
 }
+
+
+/* Background-only and reset controls */
+#background_only_button {
+	position: absolute;
+	top: 2px;
+	right: 64px;
+	z-index: 4;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	opacity: .5;
+	cursor: pointer;
+	font-size: 15px;
+}
+#background_only_button:hover,
+#background_only_button:focus,
+#background_only_button.active {
+	opacity: 1;
+}
+body.background-only #main,
+body.background-only #layout_switcher,
+body.background-only #humble_clock {
+	opacity: 0 !important;
+	pointer-events: none !important;
+}
+.reset-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: .5em;
+	margin: .4em 0;
+}
