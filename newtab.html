@@ -40,6 +40,8 @@
 		<label class="subopt"><span>Number of items</span><input id="options_number_top" type="number" min="1" max="10"/></label>
 		<label><span>Recent bookmarks</span><input id="options_show_recent" type="checkbox"/></label>
 		<label class="subopt"><span>Number of items</span><input id="options_number_recent" type="number" min="1" max="1000"/></label>
+		<label class="subopt"><span>Reverse order</span><input id="options_reverse_recent" type="checkbox"/></label>
+		<label><span>Sort items alphabetically</span><input id="options_sort_alpha" type="checkbox"/></label>
 		<label><span>Recently closed</span><input id="options_show_closed" type="checkbox"/></label>
 		<label class="subopt"><span>Number of items</span><input id="options_number_closed" type="number" min="1" max="25"/></label>
 		<label><span>Other devices</span><input id="options_show_devices" type="checkbox"/></label>
@@ -69,6 +71,11 @@
 		<label><span>Highlight</span><input id="options_highlight_color" type="color"/></label>
 		<label><span>Highlight text</span><input id="options_highlight_font_color" type="color"/></label>
 		<label><span>Shadow</span><input id="options_shadow_color" type="color"/></label>
+		<label><span>Dark mode</span><select id="options_dark_mode">
+			<option value="0">Off</option>
+			<option value="1">Follow system</option>
+			<option value="2">Always</option>
+		</select></label>
 	</fieldset>
 	<fieldset>
 		<legend>Layout</legend>
