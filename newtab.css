@@ -818,3 +818,8 @@ body.background-only #humble_clock {
 	gap: .5em;
 	margin: .4em 0;
 }
+
+
+.history .icon {
+	background-image: -webkit-image-set(url("icons/recent.png") 1x, url("icons/recent@2x.png") 2x);
+}
