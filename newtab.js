@@ -83,6 +83,13 @@ function render(node, target) {
 
 // render an array of bookmark nodes
 function renderAll(nodes, target, toplevel) {
+	if (getConfig('sort_alpha')) {
+		nodes = nodes.slice(0).sort(function(a, b) {
+			var at = (a.title || a.name || a.url || '').toLocaleLowerCase();
+			var bt = (b.title || b.name || b.url || '').toLocaleLowerCase();
+			return at.localeCompare(bt);
+		});
+	}
 	var ul = document.createElement('ul');
 	for (var i = 0; i < nodes.length; i++) {
 		var node = nodes[i];
@@ -626,6 +633,7 @@ function getChildrenFunction(node) {
 		case 'recent':
 			return function(callback) {
 				chrome.bookmarks.getRecent(getConfig('number_recent'), function(result) {
+					if (getConfig('reverse_recent')) result = result.slice(0).reverse();
 					callback(result);
 				});
 			};
@@ -1164,7 +1172,10 @@ var config = {
 	css: '',
 	number_top: 10,
 	number_closed: 10,
-	number_recent: 10
+	number_recent: 10,
+	sort_alpha: 0,
+	reverse_recent: 0,
+	dark_mode: 0
 };
 
 // color theme values
@@ -1268,7 +1279,7 @@ function setConfig(key, value) {
 		value = (theme.hasOwnProperty(key) ? theme[key] : config[key]);
 	}
 	// special case settings
-	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key.substring(0,6) == 'number')
+	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key.substring(0,6) == 'number')
 		loadColumns();
 	else if (key == 'theme') {
 		theme = themes[value];
@@ -1352,6 +1363,10 @@ function getStyle(key, value) {
 			return value;
 		case 'auto_scale':
 			return value ? null : '#main { margin-top: 80px; width: 1000px; }';
+		case 'dark_mode':
+			if (Number(value) === 2) return 'body { background-color:#17191c !important; color:#e8e8e8 !important; } #main a { color:#d7d9dc !important; } #main a:hover { color:#fff !important; background-color:#2b3138 !important; box-shadow:0 0 7px #566b7a !important; } #options, #options .section, .menu, .bookmark-search-panel, .bookmark-editor-dialog, .column-settings-dialog { background-color:#202328 !important; color:#eee !important; border-color:#444 !important; } #options_nav { background-color:#191b1f !important; border-color:#444 !important; } #options_nav a.current { background-color:#202328 !important; border-color:#444 !important; } input, select, textarea, button { background-color:#2a2e34; color:#eee; border-color:#555; } #bookmark_search_input { background:#2a2e34; color:#eee; border-color:#555; } .bookmark-search-result.selected { background:#293846; } #layout_switcher_select, #layout_switcher button { background:rgba(32,35,40,.95); color:#eee; border-color:#555; }';
+			if (Number(value) === 1) return '@media (prefers-color-scheme: dark) { body { background-color:#17191c !important; color:#e8e8e8 !important; } #main a { color:#d7d9dc !important; } #main a:hover { color:#fff !important; background-color:#2b3138 !important; box-shadow:0 0 7px #566b7a !important; } #options, #options .section, .menu, .bookmark-search-panel, .bookmark-editor-dialog, .column-settings-dialog { background-color:#202328 !important; color:#eee !important; border-color:#444 !important; } #options_nav { background-color:#191b1f !important; border-color:#444 !important; } #options_nav a.current { background-color:#202328 !important; border-color:#444 !important; } input, select, textarea, button { background-color:#2a2e34; color:#eee; border-color:#555; } #bookmark_search_input { background:#2a2e34; color:#eee; border-color:#555; } .bookmark-search-result.selected { background:#293846; } #layout_switcher_select, #layout_switcher button { background:rgba(32,35,40,.95); color:#eee; border-color:#555; } }';
+			return null;
 		default:
 			return null;
 	}
