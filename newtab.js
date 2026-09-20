@@ -161,6 +161,16 @@ function addFolderHandlers(node, a) {
 		return false;
 	};
 
+	// middle click opens all links in the folder
+	a.onauxclick = function(event) {
+		if (event.button == 1) {
+			event.preventDefault();
+			openLinks(node);
+			return false;
+		}
+		return true;
+	};
+
 	// context menu handler
 	var items = getMenuItems(node);
 
