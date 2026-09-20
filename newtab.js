@@ -687,6 +687,11 @@ function getChildrenFunction(node) {
 			return function(callback) {
 				callback(window.HumbleCustomLinks ? HumbleCustomLinks.nodes() : []);
 			};
+		case 'history':
+			return function(callback) {
+				if (window.HumbleHistory) HumbleHistory.getNodes(getConfig('number_history'), callback);
+				else callback([]);
+			};
 		default:
 			if (node.children)
 				return function(callback) {
@@ -740,6 +745,9 @@ function getSubTree(id, callback) {
 		case 'custom':
 			callback([{ title: 'Custom links', id: 'custom', children: true }]);
 			break;
+		case 'history':
+			callback([{ title: 'History', id: 'history', children: true }]);
+			break;
 		default:
 			chrome.bookmarks.getSubTree(id, function(result) {
 				if (result)
@@ -771,6 +779,7 @@ function setClass(target, node, isopen) {
 		case 'closed':
 		case 'devices':
 		case 'custom':
+		case 'history':
 		case 'empty':
 			target.classList.add(node.id);
 	}
@@ -931,7 +940,7 @@ function openLink(node, newtab) {
 var columns; // columns[x][y] = id
 var root; // root[] = id
 var coords; // coords[id] = {x:x, y:y}
-var special = ['apps', 'top', 'recent', 'closed', 'devices', 'custom'];
+var special = ['apps', 'top', 'recent', 'closed', 'devices', 'custom', 'history'];
 
 function parseLayoutPlacementId(id) {
 	id = String(id || '');
@@ -1246,6 +1255,8 @@ var config = {
 	show_devices: 1,
 	show_custom: 0,
 	custom_open: 1,
+	show_history: 0,
+	number_history: 50,
 	show_root: 0,
 	newtab: 0,
 	remember_open: 1,
@@ -1586,6 +1597,16 @@ function initConfig(key) {
 		input.parentNode.appendChild(swatch);
 	}
 	input.onchange = function(event) {
+		if (key == 'show_history' && input.type == 'checkbox' && input.checked && window.HumbleHistory) {
+			HumbleHistory.requestPermission().then(function(granted) {
+				if (granted) setConfig(key, 1);
+				else {
+					input.checked = false;
+					setConfig(key, 0);
+				}
+			});
+			return false;
+		}
 		if (input.type == 'file') {
 			// load file
 			if (event.target.files.length == 1) {
