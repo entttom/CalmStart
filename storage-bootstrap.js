@@ -168,9 +168,12 @@
 	});
 
 	ready.then(function() {
-		S.attachDevelopmentControls();
-		var script = document.createElement('script');
-		script.src = 'newtab.js';
-		document.body.appendChild(script);
+		var prepare = S.namedLayouts && S.namedLayouts.initialize ? S.namedLayouts.initialize() : Promise.resolve();
+		Promise.resolve(prepare).then(function() {
+			S.attachDevelopmentControls();
+			var script = document.createElement('script');
+			script.src = 'newtab.js';
+			document.body.appendChild(script);
+		});
 	});
 })(HumbleSync);
