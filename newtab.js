@@ -74,6 +74,8 @@ function render(node, target) {
 
 	} else if (node.id == 'apps')
 		enableDragFolder(node, a);
+	else if (url && window.HumbleBookmarkEditor && HumbleBookmarkEditor.isEditableBookmark(node))
+		HumbleBookmarkEditor.attachBookmark(node, a);
 
 	target.appendChild(li);
 	return li;
@@ -312,6 +314,8 @@ function getMenuItems(node) {
 				openLink({ url: 'chrome://history' }, 1);
 			}
 		});
+	if (Number(node.id) && window.HumbleBookmarkEditor)
+		items = items.concat(HumbleBookmarkEditor.folderMenuItems(node));
 	if (Number(node.id))
 		items.push({
 			label: 'Edit bookmarks',
