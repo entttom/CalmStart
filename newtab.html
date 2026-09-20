@@ -91,6 +91,15 @@
 			<option value="32">32 px</option>
 		</select></label>
 		<label><span>High quality</span><input id="options_high_quality_icons" type="checkbox"/></label>
+		<label><span>Contrast halo</span><select id="options_icon_contrast">
+			<option value="0">Off</option>
+			<option value="1">Subtle</option>
+			<option value="2">Strong</option>
+		</select></label>
+		<label><span>Scaling</span><select id="options_icon_rendering">
+			<option value="auto">Smooth</option>
+			<option value="pixelated">Pixelated</option>
+		</select></label>
 		<label><span>Cache favicons locally</span><input id="options_cache_favicons" type="checkbox"/></label>
 		<label class="favicon-overrides-label"><span>Domain icon overrides (JSON)</span><textarea id="options_favicon_overrides" spellcheck="false" placeholder='{"example.com":"data:image/png;base64,..."}'></textarea></label>
 		<div class="icon-actions"><button id="clear_favicon_cache" type="button">Clear favicon cache</button></div>
