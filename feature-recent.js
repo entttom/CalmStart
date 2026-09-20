@@ -54,7 +54,7 @@
 	function attach(node, anchor) {
 		if (!node || !node.dismissRecentKey || !anchor) return;
 		anchor.oncontextmenu = function(event) {
-			renderMenu([
+			var items = [
 				{
 					label: 'Hide from Recently closed',
 					action: function() { dismiss(node.dismissRecentKey); }
@@ -63,7 +63,12 @@
 					label: 'Restore hidden items',
 					action: clearDismissed
 				}
-			], event.pageX, event.pageY);
+			];
+			if (window.HumbleHotkeys && node.url) {
+				items.push(null);
+				items = items.concat(HumbleHotkeys.menuItems(node));
+			}
+			renderMenu(items, event.pageX, event.pageY);
 			return false;
 		};
 	}
