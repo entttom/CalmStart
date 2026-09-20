@@ -59,8 +59,10 @@ function render(node, target) {
 
 	// folder
 	if (node.children) {
+		var persistentOpen = node.id == 'custom' && getConfig('custom_open');
+		if (persistentOpen) a.persistentOpen = true;
 		// render children
-		if (a.open || getConfig('remember_open') && localStorage.getItem('open.' + node.id)) {
+		if (a.open || persistentOpen || getConfig('remember_open') && localStorage.getItem('open.' + node.id)) {
 			setClass(a, node, true);
 			a.open = true;
 			getChildrenFunction(node)(function(result) {
@@ -74,6 +76,8 @@ function render(node, target) {
 
 	} else if (node.id == 'apps')
 		enableDragFolder(node, a);
+	else if (node.customLinkId && window.HumbleCustomLinks)
+		HumbleCustomLinks.attachLink(node, a);
 	else if (url && window.HumbleBookmarkEditor && HumbleBookmarkEditor.isEditableBookmark(node))
 		HumbleBookmarkEditor.attachBookmark(node, a);
 
@@ -171,6 +175,7 @@ function addFolderHandlers(node, a) {
 
 	// click handler
 	a.onclick = function() {
+		if (node.id == 'custom' && getConfig('custom_open')) return false;
 		toggle(node, a, getChildrenFunction(node));
 		return false;
 	};
@@ -341,6 +346,8 @@ function getMenuItems(node) {
 				openLink({ url: 'chrome://history' }, 1);
 			}
 		});
+	if (node.id == 'custom' && window.HumbleCustomLinks)
+		items = items.concat(HumbleCustomLinks.folderMenuItems());
 	if (Number(node.id) && window.HumbleBookmarkEditor)
 		items = items.concat(HumbleBookmarkEditor.folderMenuItems(node));
 	if (Number(node.id) && window.HumbleIconSettings)
@@ -651,6 +658,10 @@ function getChildrenFunction(node) {
 					callback(result);
 				});
 			};
+		case 'custom':
+			return function(callback) {
+				callback(window.HumbleCustomLinks ? HumbleCustomLinks.nodes() : []);
+			};
 		default:
 			if (node.children)
 				return function(callback) {
@@ -701,6 +712,9 @@ function getSubTree(id, callback) {
 		case 'devices':
 			callback([{ title: 'Other devices', id: 'devices', children: true }]);
 			break;
+		case 'custom':
+			callback([{ title: 'Custom links', id: 'custom', children: true }]);
+			break;
 		default:
 			chrome.bookmarks.getSubTree(id, function(result) {
 				if (result)
@@ -731,6 +745,7 @@ function setClass(target, node, isopen) {
 		case 'recent':
 		case 'closed':
 		case 'devices':
+		case 'custom':
 		case 'empty':
 			target.classList.add(node.id);
 	}
@@ -803,7 +818,7 @@ function toggle(node, a) {
 			var siblings = a.parentNode.parentNode.children;
 			for (var i=0; i<siblings.length; i++) {
 				var sibling = siblings[i].firstChild;
-				if (sibling != a && sibling.open)
+				if (sibling != a && sibling.open && !sibling.persistentOpen)
 					sibling.onclick();
 			}
 		}
@@ -885,7 +900,7 @@ function openLink(node, newtab) {
 var columns; // columns[x][y] = id
 var root; // root[] = id
 var coords; // coords[id] = {x:x, y:y}
-var special = ['apps', 'top', 'recent', 'closed', 'devices'];
+var special = ['apps', 'top', 'recent', 'closed', 'devices', 'custom'];
 
 function parseLayoutPlacementId(id) {
 	id = String(id || '');
@@ -1175,6 +1190,8 @@ var config = {
 	show_recent: 1,
 	show_closed: 1,
 	show_devices: 1,
+	show_custom: 0,
+	custom_open: 1,
 	show_root: 0,
 	newtab: 0,
 	remember_open: 1,
@@ -1293,7 +1310,7 @@ function setConfig(key, value) {
 		value = (theme.hasOwnProperty(key) ? theme[key] : config[key]);
 	}
 	// special case settings
-	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key == 'icon_size' || key == 'high_quality_icons' || key.substring(0,6) == 'number')
+	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key == 'icon_size' || key == 'high_quality_icons' || key == 'custom_open' || key.substring(0,6) == 'number')
 		loadColumns();
 	else if (key == 'theme') {
 		theme = themes[value];
