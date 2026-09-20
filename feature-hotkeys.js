@@ -18,6 +18,7 @@
 		var keys = Object.keys(value || {});
 		if (!keys.length) localStorage.removeItem(STORAGE_KEY);
 		else localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+		renderManager();
 	}
 
 	function normalizeInput(value) {
@@ -146,6 +147,74 @@
 		else chrome.tabs.update({ url: item.url });
 	}
 
+	function clearAll() {
+		writeMappings({});
+		if (typeof window.renderColumns === 'function') window.renderColumns();
+	}
+
+	function renderManager() {
+		var list = document.getElementById('hotkey_list');
+		if (!list) return;
+		while (list.firstChild) list.removeChild(list.firstChild);
+
+		var mappings = readMappings();
+		var codes = Object.keys(mappings).sort();
+		if (!codes.length) {
+			var empty = document.createElement('div');
+			empty.className = 'hotkey-empty';
+			empty.textContent = 'No link shortcuts configured.';
+			list.appendChild(empty);
+		} else {
+			for (var i = 0; i < codes.length; i++) {
+				(function(code) {
+					var item = mappings[code];
+					var row = document.createElement('div');
+					row.className = 'hotkey-row';
+
+					var key = document.createElement('kbd');
+					key.textContent = 'Alt/⌥+' + (item.label || code.replace(/^Key|^Digit/, ''));
+
+					var target = document.createElement('span');
+					target.className = 'hotkey-target';
+					target.textContent = item.title || item.url;
+					target.title = item.url;
+
+					var remove = document.createElement('button');
+					remove.type = 'button';
+					remove.textContent = 'Remove';
+					remove.onclick = function() {
+						var next = readMappings();
+						delete next[code];
+						writeMappings(next);
+						if (typeof window.renderColumns === 'function') window.renderColumns();
+					};
+
+					row.appendChild(key);
+					row.appendChild(target);
+					row.appendChild(remove);
+					list.appendChild(row);
+				})(codes[i]);
+			}
+		}
+
+		var clear = document.getElementById('clear_link_hotkeys');
+		if (clear) clear.disabled = !codes.length;
+	}
+
+	function installManager() {
+		var clear = document.getElementById('clear_link_hotkeys');
+		if (clear && !clear.dataset.bound) {
+			clear.dataset.bound = '1';
+			clear.onclick = function() { clearAll(); return false; };
+		}
+		renderManager();
+	}
+
+	if (document.readyState === 'loading')
+		document.addEventListener('DOMContentLoaded', installManager);
+	else
+		installManager();
+
 	document.addEventListener('keydown', function(event) {
 		if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
 		var target = event.target;
@@ -167,6 +236,8 @@
 		decorate: decorate,
 		attachOnly: attachOnly,
 		setShortcut: setShortcut,
-		removeShortcut: removeShortcut
+		removeShortcut: removeShortcut,
+		clearAll: clearAll,
+		renderManager: renderManager
 	};
 })();
