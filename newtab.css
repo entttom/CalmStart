@@ -935,3 +935,21 @@ body.background-only #humble_clock {
 		gap: 4px;
 	}
 }
+
+
+/* Link hotkey hints */
+#main .hotkey-hint {
+	display: inline-block;
+	margin-left: .65em;
+	padding: .08em .36em;
+	border: 1px solid currentColor;
+	border-radius: .35em;
+	font-size: .62em;
+	line-height: 1.25;
+	opacity: .45;
+	vertical-align: .08em;
+}
+#main a:hover .hotkey-hint,
+#main a:focus .hotkey-hint {
+	opacity: .8;
+}
