@@ -16,6 +16,7 @@ This branch builds on the browser-sync work and groups long-standing user reques
 - Ctrl/Cmd+K and / shortcuts
 - Optional DuckDuckGo, Google or Bing web-search result
 - #102 keyboard navigation with Arrow keys and Enter
+- #78 per-link Alt/Option + key shortcuts with visible hints
 
 ### Direct bookmark management
 - #22, #54, #56
@@ -44,6 +45,7 @@ This branch builds on the browser-sync work and groups long-standing user reques
 - #99 center single column
 
 ### Icons and favicons
+- #88 optional light/dark favicon contrast backplates
 - #95 validated domain -> icon JSON overrides
 - #98 configurable 16/20/24/32 px icons
 - #104 bounded local favicon cache
@@ -52,14 +54,30 @@ This branch builds on the browser-sync work and groups long-standing user reques
 - #121 portable custom folder icons
 - Large favicon overrides remain local-only to avoid sync quota problems
 
-### Appearance and background
+### Appearance, fonts and background
+- #32 searchable system-font preview browser
 - #38, #103 dark mode: Off / Follow system / Always
 - #44 one-click background-only view
+- #73 settings panel can optionally inherit page/theme colors
 - #76 optional clock
+- #76/#124 remote background URLs can be periodically refreshed with cache-busting
 - #17, #135 live local background file using File System Access + IndexedDB
   - file handle is remembered locally
   - current file is reread on new tabs
   - open tabs poll for file changes
+
+### Localization
+- #42 extensible runtime UI translation layer
+- System language / English / German selector
+- Dynamically created menus/dialogs are translated through a MutationObserver
+- Chrome manifest metadata uses native _locales/en and _locales/de message catalogs
+
+### Weather
+- #43/#65 retired Yahoo weather is replaced with Open-Meteo
+- No API key required
+- Location is entered manually; no device geolocation permission is requested
+- Open-Meteo host access is optional and requested only when Weather is enabled
+- Current temperature + WMO weather state, cached for 30 minutes
 
 ### Recent items
 - #15 reverse Recent bookmarks
@@ -88,39 +106,37 @@ This branch builds on the browser-sync work and groups long-standing user reques
 - Bookmark search builds its full URL index lazily only when search is opened
 - Diagnostics show index source, folder count, index time and storage initialization time
 
+### Incognito
+- #129 manifest now uses split incognito mode so the extension's own New Tab page can run in an incognito process when the user explicitly enables "Allow in Incognito"
+- Browser storage settings remain shared by Chrome across normal/split-incognito contexts
+
 ## Partially covered / deferred
 
 ### Tabliss-style dashboard
-- #124 is partially covered by optional clock, backgrounds, layouts and custom links
-- No built-in Unsplash client or large widget framework has been added; the default page stays intentionally lightweight
+- #124 is substantially covered by optional clock, weather, backgrounds, layouts and custom links
+- No large generic widget framework has been added; the default page stays intentionally lightweight
 
 ### Browser/platform-specific issues
-- #42 full UI translations are not yet implemented
 - #46 Firefox containers
 - #67/#74 legacy Firefox crashes
 - #91 Vivaldi omnibox focus
 - #100 Microsoft Edge Store publishing
-- #110 Opera favicon behavior is mitigated by override/cache controls but needs browser-specific testing
-- #122 Firefox internal URL handling
-- #129 Chrome incognito behavior
+- #110 Opera favicon behavior is mitigated by override/cache controls but still needs browser-specific testing
+- #122 Firefox privileged internal URL handling
 - #132 Firefox Home-page context
 
 ### Browser API limitations / external data
 - #14 old Google Products integration is obsolete
 - #25 Pinboard requires an external service/account
-- #43/#65 retired Yahoo Weather integration
 - #52 Most Visited count is constrained by browser APIs
 - #77 stale Other Devices are controlled by browser session sync
 - #94 Most Visited ordering is browser-provided
 - #97 tab-position restoration depends on browser/session implementation
 
 ### Remaining nice-to-have items
-- #32 font preview browser
-- #73 broader appearance inheritance for every settings control (dark mode is implemented)
-- #78 user-defined per-link hotkeys
-- #88 optional icon contrast/backplates
-- #124 additional widgets
 - #26 donation / in-app purchase is intentionally outside the feature branch
+- Additional languages can be added to the new localization layer
+- Additional lightweight widgets can be added without changing the default experience
 
 ## Design principle
 
