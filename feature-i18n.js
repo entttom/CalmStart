@@ -223,17 +223,19 @@
 		'Weather: set a location': 'Wetter: Ort festlegen',
 		'Weather…': 'Wetter…',
 		'Weather unavailable': 'Wetter nicht verfügbar',
-		'Clear': 'Klar',
-		'Mainly clear': 'Überwiegend klar',
-		'Partly cloudy': 'Teilweise bewölkt',
-		'Overcast': 'Bedeckt',
-		'Fog': 'Nebel',
-		'Drizzle': 'Nieselregen',
-		'Rain': 'Regen',
-		'Snow': 'Schnee',
-		'Rain showers': 'Regenschauer',
-		'Snow showers': 'Schneeschauer',
-		'Thunderstorm': 'Gewitter'
+		'Condition: Clear': 'Klar',
+		'Condition: Mainly clear': 'Überwiegend klar',
+		'Condition: Partly cloudy': 'Teilweise bewölkt',
+		'Condition: Overcast': 'Bedeckt',
+		'Condition: Fog': 'Nebel',
+		'Condition: Drizzle': 'Nieselregen',
+		'Condition: Rain': 'Regen',
+		'Condition: Snow': 'Schnee',
+		'Condition: Rain showers': 'Regenschauer',
+		'Condition: Snow showers': 'Schneeschauer',
+		'Condition: Thunderstorm': 'Gewitter',
+		'Light backplate': 'Helle Kontrastfläche',
+		'Dark backplate': 'Dunkle Kontrastfläche'
 	};
 
 	var dictionaries = { de: de };
