@@ -1009,17 +1009,23 @@ function loadColumns() {
 		verifyColumns();
 		renderColumns();
 	} else {
-		chrome.bookmarks.getTree(function(result) {
-			// init root nodes
-			var nodes = result[0].children;
+		var cachedRoots = window.HumbleSync && HumbleSync.bookmarkIndex && HumbleSync.bookmarkIndex.roots;
+		if (cachedRoots && cachedRoots.length) {
 			root = special.slice(0);
-
-			for (var i = 0; i < nodes.length; i++)
-				root.push(nodes[i].id);
-
+			for (var i = 0; i < cachedRoots.length; i++)
+				root.push(String(cachedRoots[i].id));
 			verifyColumns();
 			renderColumns();
-		});
+		} else {
+			chrome.bookmarks.getTree(function(result) {
+				var nodes = result[0].children;
+				root = special.slice(0);
+				for (var j = 0; j < nodes.length; j++)
+					root.push(nodes[j].id);
+				verifyColumns();
+				renderColumns();
+			});
+		}
 	}
 }
 
