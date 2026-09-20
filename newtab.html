@@ -124,6 +124,14 @@
 		<legend>Background image</legend>
 		<label><span>URL</span><input id="options_background_image" type="url" placeholder="http://"/></label>
 		<label><span>Local file</span><input id="options_background_image_file" type="file" accept="image/*"/></label>
+		<div class="live-background-controls">
+			<span id="live_background_status">No live file selected</span>
+			<div>
+				<button id="choose_live_background" type="button">Choose live file…</button>
+				<button id="reconnect_live_background" type="button" hidden>Reconnect</button>
+				<button id="clear_live_background" type="button" disabled>Clear</button>
+			</div>
+		</div>
 		<label><span>Size</span><select id="options_background_size">
 			<option value="auto">Original</option>
 			<option value="cover">Full</option>
@@ -206,6 +214,7 @@
 <script src="feature-custom-links.js"></script>
 <script src="feature-clock.js"></script>
 <script src="feature-recent.js"></script>
+<script src="feature-live-background.js"></script>
 <script src="storage-bootstrap.js"></script>
 <script src="feature-search.js"></script>
 </body>
