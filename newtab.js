@@ -2,7 +2,13 @@
 
 // render a single bookmark node
 function render(node, target) {
-	if (node.description == 'separator') return;
+	if (node.description == 'separator' || node.type == 'separator') {
+		var separator = document.createElement('li');
+		separator.className = 'bookmark-separator';
+		separator.setAttribute('aria-hidden', 'true');
+		target.appendChild(separator);
+		return separator;
+	}
 
 	var li = document.createElement('li');
 	var a = document.createElement('a');
@@ -776,9 +782,15 @@ function getIcon(node) {
 	} else if (node.icon) {
 		url = node.icon;
 	} else if (node.url) {
-		url = '/_favicon/?pageUrl=' + encodeURIComponent(node.url) + '&size=' + requestSize;
-		if (highQuality)
-			url2x = '/_favicon/?pageUrl=' + encodeURIComponent(node.url) + '&size=' + Math.min(requestSize * 2, 128);
+		if (window.HumbleIconSettings && HumbleIconSettings.webIconUrl) {
+			url = HumbleIconSettings.webIconUrl(node.url, requestSize);
+			if (highQuality)
+				url2x = HumbleIconSettings.webIconUrl(node.url, Math.min(requestSize * 2, 128));
+		} else {
+			url = '/_favicon/?pageUrl=' + encodeURIComponent(node.url) + '&size=' + requestSize;
+			if (highQuality)
+				url2x = '/_favicon/?pageUrl=' + encodeURIComponent(node.url) + '&size=' + Math.min(requestSize * 2, 128);
+		}
 	}
 
 	var icon = document.createElement(url ? 'img' : 'div');
@@ -1207,6 +1219,8 @@ var config = {
 	show_icons: 1,
 	icon_size: 16,
 	high_quality_icons: 1,
+	cache_favicons: 1,
+	favicon_overrides: '{}',
 	show_clock: 0,
 	clock_24h: 1,
 	web_search_engine: 'off'
@@ -1306,6 +1320,15 @@ function getConfig(key) {
 
 // set config value
 function setConfig(key, value) {
+	if (key == 'favicon_overrides' && value != null && window.HumbleIconSettings) {
+		var validation = HumbleIconSettings.parseOverrides(value);
+		if (!validation.ok) {
+			alert(validation.error);
+			showConfig(key);
+			return getConfig(key);
+		}
+		value = JSON.stringify(validation.value, null, 2);
+	}
 	if (value != null)
 		localStorage.setItem('options.' + key, typeof config[key] === 'number' ? Number(value) : value);
 	else {
@@ -1313,7 +1336,7 @@ function setConfig(key, value) {
 		value = (theme.hasOwnProperty(key) ? theme[key] : config[key]);
 	}
 	// special case settings
-	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key == 'icon_size' || key == 'high_quality_icons' || key == 'custom_open' || key.substring(0,6) == 'number')
+	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'sort_alpha' || key == 'reverse_recent' || key == 'icon_size' || key == 'high_quality_icons' || key == 'cache_favicons' || key == 'favicon_overrides' || key == 'custom_open' || key.substring(0,6) == 'number')
 		loadColumns();
 	else if (key == 'theme') {
 		theme = themes[value];
