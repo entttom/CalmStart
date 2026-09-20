@@ -164,9 +164,14 @@
 	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
 	else install();
 
+	function refresh() {
+		if (overlay && !overlay.hidden) render();
+	}
+
 	window.HumbleFontPreview = {
 		open: open,
 		close: close,
+		refresh: refresh,
 		reload: function() { loaded = false; fonts = []; return loadFonts(); }
 	};
 })();
