@@ -1301,6 +1301,10 @@ var config = {
 	background_align: 'left top',
 	background_repeat: 'repeat',
 	background_size: 'auto',
+	background_rotation_urls: '',
+	background_rotation_interval: 0,
+	background_rotation_random: 1,
+	background_rotation_bust: 0,
 	shadow_blur: 1,
 	highlight_round: 1,
 	fade: 1,
@@ -1635,6 +1639,8 @@ function onChange(key, value) {
 
 	if ((key == 'show_clock' || key == 'clock_24h') && window.HumbleClock)
 		HumbleClock.refresh();
+	if ((key == 'background_rotation_urls' || key == 'background_rotation_interval' || key == 'background_rotation_random' || key == 'background_rotation_bust') && window.HumbleBackgroundRotation)
+		HumbleBackgroundRotation.refresh();
 	if ((key == 'font' || key == 'font_size' || key == 'font_weight') && window.HumbleFontPreview)
 		HumbleFontPreview.refresh();
 
