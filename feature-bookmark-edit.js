@@ -264,16 +264,21 @@
 
 	function attachBookmark(node, anchor) {
 		if (!isBookmarkNode(node) || !anchor) return;
+		if (window.HumbleHotkeys) HumbleHotkeys.decorate(node, anchor);
 		anchor.oncontextmenu = function(event) {
 			var items = [
 				{ label: 'Edit bookmark…', action: function() { show('edit-bookmark', node); } },
-				{ label: 'Move bookmark…', action: function() { show('move-bookmark', node); } },
-				null,
-				{ label: 'Delete bookmark…', action: function() {
-					show('edit-bookmark', node);
-					deleteBookmark();
-				} }
+				{ label: 'Move bookmark…', action: function() { show('move-bookmark', node); } }
 			];
+			if (window.HumbleHotkeys) {
+				items.push(null);
+				items = items.concat(HumbleHotkeys.menuItems(node));
+			}
+			items.push(null);
+			items.push({ label: 'Delete bookmark…', action: function() {
+				show('edit-bookmark', node);
+				deleteBookmark();
+			} });
 			renderMenu(items, event.pageX, event.pageY);
 			return false;
 		};
