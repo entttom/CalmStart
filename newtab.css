@@ -730,3 +730,33 @@ input[type="file"]::-webkit-file-upload-button {
 #humble_clock:hover {
 	opacity: 1;
 }
+
+
+/* Bookmark separators */
+#main .bookmark-separator {
+	height: 1px;
+	margin: .55em .8em;
+	background: currentColor;
+	opacity: .18;
+}
+
+/* Favicon overrides */
+.favicon-overrides-label {
+	margin-top: .8em;
+	text-align: left;
+}
+.favicon-overrides-label span {
+	float: none;
+	display: block;
+	margin-bottom: .3em;
+}
+#options_favicon_overrides {
+	float: none;
+	width: 100%;
+	height: 8em;
+	margin: 0;
+}
+.icon-actions {
+	margin: .5em 0 0;
+	text-align: right;
+}
