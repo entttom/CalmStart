@@ -173,6 +173,13 @@
 		<legend>Custom CSS</legend>
 		<label><textarea id="options_css"></textarea></label>
 	</fieldset>
+	<fieldset id="reset_controls">
+		<legend>Reset / recovery</legend>
+		<div class="reset-actions">
+			<button id="reset_current_layout" type="button">Reset current layout</button>
+			<button id="reset_all_settings" type="button">Reset settings</button>
+		</div>
+	</fieldset>
 	<fieldset id="sync_diagnostics">
 		<legend>Sync diagnostics</legend>
 		<label><span>Version</span><input id="dev_version" type="text" value="Pending" readonly/></label>
@@ -219,6 +226,7 @@
 <script src="feature-clock.js"></script>
 <script src="feature-recent.js"></script>
 <script src="feature-live-background.js"></script>
+<script src="feature-ui-controls.js"></script>
 <script src="storage-bootstrap.js"></script>
 <script src="feature-search.js"></script>
 </body>
