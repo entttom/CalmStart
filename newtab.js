@@ -94,11 +94,25 @@ function render(node, target) {
 // render an array of bookmark nodes
 function renderAll(nodes, target, toplevel) {
 	if (getConfig('sort_alpha')) {
-		nodes = nodes.slice(0).sort(function(a, b) {
-			var at = (a.title || a.name || a.url || '').toLocaleLowerCase();
-			var bt = (b.title || b.name || b.url || '').toLocaleLowerCase();
-			return at.localeCompare(bt);
-		});
+		var sorted = [], segment = [];
+		var flushSegment = function() {
+			segment.sort(function(a, b) {
+				var at = (a.title || a.name || a.url || '').toLocaleLowerCase();
+				var bt = (b.title || b.name || b.url || '').toLocaleLowerCase();
+				return at.localeCompare(bt);
+			});
+			sorted = sorted.concat(segment);
+			segment = [];
+		};
+		for (var si = 0; si < nodes.length; si++) {
+			var sn = nodes[si];
+			if (sn && (sn.description == 'separator' || sn.type == 'separator')) {
+				flushSegment();
+				sorted.push(sn);
+			} else segment.push(sn);
+		}
+		flushSegment();
+		nodes = sorted;
 	}
 	var ul = document.createElement('ul');
 	for (var i = 0; i < nodes.length; i++) {
