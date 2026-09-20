@@ -20,7 +20,9 @@
 		"storage"
 	],
 	"optional_host_permissions": [
-		"file:///"
+		"file:///",
+		"https://api.open-meteo.com/*",
+		"https://geocoding-api.open-meteo.com/*"
 	],
 	"chrome_url_overrides": {
 		"newtab": "newtab.html"
