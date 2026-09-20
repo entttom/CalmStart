@@ -376,13 +376,18 @@ function getMenuItems(node) {
 		if (window.HumbleRecentControls)
 			items.push({ label: 'Restore hidden items', action: HumbleRecentControls.clearDismissed });
 	}
-	if (node.id == 'devices')
+	if (node.id == 'devices') {
 		items.push({
 			label: 'History',
 			action: function() {
 				openLink({ url: 'chrome://history' }, 1);
 			}
 		});
+		if (window.HumbleDeviceControls)
+			items.push({ label: 'Restore hidden devices', action: HumbleDeviceControls.restoreAll });
+	}
+	if (node.deviceName && window.HumbleDeviceControls)
+		items = items.concat(HumbleDeviceControls.menuItems(node));
 	if (node.id == 'custom' && window.HumbleCustomLinks)
 		items = items.concat(HumbleCustomLinks.folderMenuItems());
 	if (Number(node.id) && window.HumbleBookmarkEditor)
@@ -1229,6 +1234,7 @@ function getDevices(callback) {
 		var nodes = [];
 		for (var i = 0; i < devices.length; i++) {
 			(function(device) {
+				if (window.HumbleDeviceControls && HumbleDeviceControls.isHidden(device.deviceName)) return;
 				var children = [];
 				for (var j = 0; j < device.sessions.length; j++) {
 					var session = device.sessions[j];
@@ -1243,6 +1249,7 @@ function getDevices(callback) {
 				nodes.push({
 					id: 'device.' + device.deviceName,
 					title: device.deviceName,
+					deviceName: device.deviceName,
 					children: children
 				});
 			})(devices[i]);
