@@ -1669,6 +1669,46 @@ loadSettings();
 loadColumns();
 
 // keyboard shortcuts
+function visibleColumnLinks(column) {
+	if (!column) return [];
+	return Array.prototype.filter.call(column.querySelectorAll('a'), function(link) {
+		return link.offsetParent !== null && !link.closest('.menu');
+	});
+}
+
+function focusAdjacentMainLink(event) {
+	var target = event.target;
+	if (!target || target.tagName !== 'A' || !target.closest('#main')) return false;
+	if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(event.key) < 0) return false;
+
+	var column = target.closest('.column');
+	var columnsList = Array.prototype.slice.call(document.querySelectorAll('#main > .column'));
+	var links = visibleColumnLinks(column);
+	var index = links.indexOf(target);
+	var next = null;
+
+	if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+		if (index < 0) return false;
+		var delta = event.key === 'ArrowUp' ? -1 : 1;
+		next = links[index + delta];
+	} else {
+		var columnIndex = columnsList.indexOf(column);
+		var columnDelta = event.key === 'ArrowLeft' ? -1 : 1;
+		var nextColumn = columnsList[columnIndex + columnDelta];
+		if (nextColumn) {
+			var nextLinks = visibleColumnLinks(nextColumn);
+			if (nextLinks.length) next = nextLinks[Math.min(Math.max(index, 0), nextLinks.length - 1)];
+		}
+	}
+
+	if (!next) return false;
+	next.focus();
+	event.preventDefault();
+	return true;
+}
+
+document.addEventListener('keydown', focusAdjacentMainLink);
+
 document.addEventListener('keypress', function(event) {
 	if (event.keyCode == 13 && event.target && event.target.onclick && event.target.tagName == 'A') {
 		event.target.dispatchEvent(new MouseEvent('click'));
