@@ -118,7 +118,9 @@ var HumbleSync = (function() {
 	};
 	S.isColumnKey = function(key) { return /^column\.\d+\.\d+$/.test(key); };
 	S.isOptionKey = function(key) { return key.indexOf('options.') === 0; };
-	S.isLocalOnlyOption = function(key) { return key === 'options.background_image_file'; };
+	S.isLocalOnlyOption = function(key) {
+		return key === 'options.background_image_file' || key === 'options.favicon_overrides';
+	};
 	S.numericRootOptionId = function(key) {
 		var match = /^options\.show_(\d+)$/.exec(key);
 		return match ? match[1] : null;
