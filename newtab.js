@@ -675,9 +675,9 @@ function getChildrenFunction(node) {
 function getSubTree(id, callback) {
 	var placement = parseLayoutPlacementId(id);
 	if (placement) {
-		chrome.bookmarks.getSubTree(placement.id, function(result) {
+		getSubTree(placement.id, function(result) {
 			if (result && result[0]) {
-				var node = result[0];
+				var node = Object.assign({}, result[0]);
 				node.layoutId = id;
 				callback([node]);
 			} else if (coords[id])
