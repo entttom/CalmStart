@@ -43,7 +43,9 @@
 		timer = setInterval(refresh, 30000);
 	}
 
-	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+	var ready = window.HumbleStorage && window.HumbleStorage.ready;
+	if (ready && typeof ready.then === 'function') ready.then(start);
+	else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
 	else start();
 
 	window.HumbleClock = {
