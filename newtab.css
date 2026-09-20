@@ -708,3 +708,25 @@ input[type="file"]::-webkit-file-upload-button {
 .column-settings-actions button:first-child {
 	margin-right: auto;
 }
+
+
+/* Optional clock */
+#humble_clock[hidden] {
+	display: none;
+}
+#humble_clock {
+	position: absolute;
+	top: 7px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 2;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	line-height: 1.2;
+	opacity: .65;
+	user-select: none;
+}
+#humble_clock:hover {
+	opacity: 1;
+}
