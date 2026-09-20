@@ -505,3 +505,64 @@ input[type="file"]::-webkit-file-upload-button {
 		display: none;
 	}
 }
+
+
+/* Direct bookmark editor */
+#bookmark_editor_overlay[hidden] {
+	display: none;
+}
+#bookmark_editor_overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 10001;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 12vh 16px 24px;
+	box-sizing: border-box;
+	background: rgba(0, 0, 0, .32);
+}
+.bookmark-editor-dialog {
+	width: min(480px, 100%);
+	padding: 18px;
+	box-sizing: border-box;
+	background: #FAFAFA;
+	color: #222;
+	border: 1px solid #999;
+	border-radius: 7px;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+	font-size: 1.4em;
+}
+.bookmark-editor-heading {
+	margin: 0 0 14px;
+	font-size: 1.2em;
+	font-weight: 600;
+}
+.bookmark-editor-row {
+	display: grid;
+	grid-template-columns: 80px minmax(0, 1fr);
+	align-items: center;
+	gap: 10px;
+	margin: 8px 0;
+	font-size: .9em;
+	text-align: left;
+}
+.bookmark-editor-row span {
+	float: none;
+}
+.bookmark-editor-row input,
+.bookmark-editor-row select {
+	width: 100%;
+	height: 34px;
+	margin: 0;
+	box-sizing: border-box;
+}
+.bookmark-editor-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+.bookmark-editor-delete {
+	margin-right: auto;
+}
