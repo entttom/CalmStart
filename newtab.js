@@ -89,6 +89,11 @@ function render(node, target) {
 	else if (url && window.HumbleBookmarkEditor && HumbleBookmarkEditor.isEditableBookmark(node))
 		HumbleBookmarkEditor.attachBookmark(node, a);
 
+	if (url && window.HumbleHotkeys) {
+		HumbleHotkeys.decorate(node, a);
+		if (!a.oncontextmenu) HumbleHotkeys.attachOnly(node, a);
+	}
+
 	target.appendChild(li);
 	return li;
 }
