@@ -275,7 +275,7 @@
 		var manifest = chrome.runtime && chrome.runtime.getManifest ? chrome.runtime.getManifest() : {};
 		var current = S.currentPortableLayout ? S.currentPortableLayout() : { hash: 'unknown' };
 		var lines = [
-			'Humble New Tab Page ' + (manifest.version || 'unknown'),
+			'CalmStart ' + (manifest.version || 'unknown'),
 			'Browser: ' + navigator.userAgent,
 			'Schema: ' + S.SCHEMA_VERSION,
 			'Sync status: ' + S.syncStatus(),

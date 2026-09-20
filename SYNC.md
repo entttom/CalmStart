@@ -1,6 +1,6 @@
-# Browser Sync
+# CalmStart Browser Sync
 
-Humble New Tab Page can synchronize its layout and settings through the browser's built-in extension sync storage without requiring an external service.
+CalmStart synchronizes its layout and settings through the browser's built-in extension sync storage without requiring an external service.
 
 ## What is synchronized
 
@@ -56,17 +56,3 @@ Controls are provided to:
 - **Reload remote state** - reread synchronized settings/layout and apply the current winner.
 - **Restore previous layout** - republish the latest local recovery backup.
 - **Copy diagnostics** - copy a support-friendly report including recent events.
-
-Successful sync operations are intentionally not spammed to the browser console; the console remains available for warnings and initialization failures.
-
-## Suggested testing
-
-- Existing layout survives the first upgrade.
-- A fresh second Chrome profile receives settings and layout.
-- Folder references resolve when bookmark IDs differ between profiles.
-- Layout changes synchronize in both directions.
-- Concurrent layout edits create a recovery backup.
-- Restoring the previous layout republishes the backup.
-- Open/closed folder state remains device-specific.
-- A local background-image file does not synchronize.
-- Import/export includes a portable layout payload.
