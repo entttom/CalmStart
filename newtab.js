@@ -90,6 +90,8 @@ function render(node, target) {
 		enableDragFolder(node, a);
 	else if (node.dismissRecentKey && window.HumbleRecentControls)
 		HumbleRecentControls.attach(node, a);
+	else if (node.topSite && window.HumbleTopSites)
+		HumbleTopSites.attach(node, a);
 	else if (node.customLinkId && window.HumbleCustomLinks)
 		HumbleCustomLinks.attachLink(node, a);
 	else if (url && window.HumbleBookmarkEditor && HumbleBookmarkEditor.isEditableBookmark(node))
@@ -711,7 +713,8 @@ function getChildrenFunction(node) {
 			return function(callback) {
 				if (chrome.topSites)
 					chrome.topSites.get(function(result) {
-						callback(result.slice(0, getConfig('number_top')));
+						var prepared = window.HumbleTopSites ? HumbleTopSites.prepare(result) : result;
+						callback(prepared.slice(0, getConfig('number_top')));
 					});
 				else
 					callback([]);
