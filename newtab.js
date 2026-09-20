@@ -152,6 +152,9 @@ function renderColumns() {
 		renderColumn(i, column);
 	}
 
+	if (window.HumbleColumnSettings)
+		HumbleColumnSettings.applyAll(Array.prototype.slice.call(target.children));
+
 	enableDragDrop();
 }
 
@@ -280,6 +283,14 @@ function addColumnHandlers(index, ul) {
 					}
 				});
 		}
+	}
+
+	if (window.HumbleColumnSettings) {
+		if (items.length) items.push(null);
+		items.push({
+			label: 'Column settings…',
+			action: function() { HumbleColumnSettings.show(index); }
+		});
 	}
 
 	if (items.length > 0)
