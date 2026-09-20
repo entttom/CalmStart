@@ -153,6 +153,8 @@
 	<fieldset>
 		<legend>Background image</legend>
 		<label><span>URL</span><input id="options_background_image" type="url" placeholder="http://"/></label>
+		<label class="subopt"><span>Refresh URL every</span><input id="options_background_refresh_minutes" type="number" min="0" max="1440"/></label>
+		<div class="background-refresh-help">Minutes; 0 disables automatic refresh.</div>
 		<label><span>Local file</span><input id="options_background_image_file" type="file" accept="image/*"/></label>
 		<div class="live-background-controls">
 			<span id="live_background_status">No live file selected</span>
@@ -256,6 +258,7 @@
 <script src="feature-clock.js"></script>
 <script src="feature-recent.js"></script>
 <script src="feature-live-background.js"></script>
+<script src="feature-remote-background.js"></script>
 <script src="feature-history.js"></script>
 <script src="feature-ui-controls.js"></script>
 <script src="feature-hotkeys.js"></script>
