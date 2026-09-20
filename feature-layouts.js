@@ -5,8 +5,9 @@
 	var PROFILE_LAYOUT_PREFIX = 'hntp.layoutProfile.';
 	var DEFAULT_ID = 'default';
 	var metaEnvelope = null;
-	var layouts = [{ id: DEFAULT_ID, name: 'Default' }];
+	var layouts = [{ id: DEFAULT_ID, name: 'Default', curated: false }];
 	var uiInstalled = false;
+	var initializationPromise = null;
 
 	S.activeLayoutId = function() {
 		return (S.meta && S.meta.activeLayoutId) || DEFAULT_ID;
@@ -26,9 +27,9 @@
 			var name = String(item.name || '').trim();
 			if (!id || !name || seen[id]) continue;
 			seen[id] = true;
-			result.push({ id: id, name: name });
+			result.push({ id: id, name: name, curated: !!item.curated });
 		}
-		if (!result.length) result.push({ id: DEFAULT_ID, name: 'Default' });
+		if (!result.length) result.push({ id: DEFAULT_ID, name: 'Default', curated: false });
 		return result;
 	}
 
@@ -242,7 +243,7 @@
 		if (!name) return;
 		var id = uniqueId();
 		var current = S.currentPortableLayout();
-		var next = layouts.concat([{ id: id, name: name }]);
+		var next = layouts.concat([{ id: id, name: name, curated: false }]);
 		Promise.all([
 			persistMeta(next),
 			writeLayout(id, current)
@@ -259,7 +260,7 @@
 		name = name.trim();
 		if (!name || name === oldName) return;
 		var next = layouts.map(function(item) {
-			return item.id === id ? { id: item.id, name: name } : item;
+			return item.id === id ? { id: item.id, name: name, curated: !!item.curated } : item;
 		});
 		persistMeta(next);
 	}
@@ -281,6 +282,30 @@
 		});
 	}
 
+	function currentLayoutRecord() {
+		var id = S.activeLayoutId();
+		for (var i = 0; i < layouts.length; i++)
+			if (layouts[i].id === id) return layouts[i];
+		return null;
+	}
+
+	function isCurated() {
+		var item = currentLayoutRecord();
+		return !!(item && item.curated);
+	}
+
+	function setCurated(value) {
+		var id = S.activeLayoutId();
+		var next = layouts.map(function(item) {
+			return item.id === id ? { id: item.id, name: item.name, curated: !!value } : item;
+		});
+		return persistMeta(next).then(function() {
+			var checkbox = document.getElementById('layout_curated');
+			if (checkbox) checkbox.checked = !!value;
+			if (!value && typeof window.loadColumns === 'function') window.loadColumns();
+		});
+	}
+
 	function renderSwitcher() {
 		if (!uiInstalled) return;
 		var select = document.getElementById('layout_switcher_select');
@@ -296,6 +321,8 @@
 		}
 		var del = document.getElementById('layout_delete_button');
 		if (del) del.disabled = layouts.length <= 1;
+		var curated = document.getElementById('layout_curated');
+		if (curated) curated.checked = isCurated();
 	}
 
 	function installUI() {
@@ -337,6 +364,12 @@
 		bar.appendChild(del);
 		document.body.appendChild(bar);
 
+		var curated = document.getElementById('layout_curated');
+		if (curated && !curated.dataset.bound) {
+			curated.dataset.bound = '1';
+			curated.onchange = function() { setCurated(curated.checked); };
+		}
+
 		select.onchange = function() {
 			select.disabled = true;
 			switchLayout(select.value);
@@ -363,12 +396,14 @@
 	}
 
 	function initialize() {
+		if (initializationPromise) return initializationPromise;
 		if (!S.meta.activeLayoutId) S.meta.activeLayoutId = DEFAULT_ID;
 		if (!S.syncArea) {
 			installUI();
-			return Promise.resolve();
+			initializationPromise = Promise.resolve();
+			return initializationPromise;
 		}
-		return S.storageGet(S.syncArea, META_KEY).then(function(data) {
+		initializationPromise = S.storageGet(S.syncArea, META_KEY).then(function(data) {
 			var incoming = data && data[META_KEY];
 			if (incoming && incoming.layouts) {
 				metaEnvelope = clone(incoming);
@@ -386,6 +421,7 @@
 			}
 			installUI();
 		});
+		return initializationPromise;
 	}
 
 	if (chrome.storage && chrome.storage.onChanged) {
@@ -414,12 +450,10 @@
 		renameActive: renameLayout,
 		deleteActive: deleteLayout,
 		initialize: initialize,
-		writeLayout: writeLayout
+		writeLayout: writeLayout,
+		isCurated: isCurated,
+		setCurated: setCurated
 	};
 
-	window.addEventListener('load', function() {
-		var ready = window.HumbleStorage && window.HumbleStorage.ready;
-		if (ready && typeof ready.then === 'function') ready.then(initialize);
-		else initialize();
-	});
+	window.HumbleNamedLayouts = S.namedLayouts;
 })(HumbleSync);
