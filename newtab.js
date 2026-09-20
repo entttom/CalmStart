@@ -1341,7 +1341,10 @@ var config = {
 	favicon_overrides: '{}',
 	show_clock: 0,
 	clock_24h: 1,
-	web_search_engine: 'off'
+	web_search_engine: 'off',
+	weather_enabled: 0,
+	weather_location: '',
+	weather_units: 'celsius'
 };
 
 // color theme values
@@ -1477,6 +1480,8 @@ function setConfig(key, value) {
 	onChange(key, value);
 	if ((key == 'background_image' || key == 'background_refresh_minutes') && window.HumbleRemoteBackground)
 		HumbleRemoteBackground.restart();
+	if ((key == 'weather_enabled' || key == 'weather_location' || key == 'weather_units') && window.HumbleWeather)
+		HumbleWeather.restart();
 	if (getConfig('settings_match_theme') && ['font_color','background_color','highlight_color','highlight_font_color','shadow_color'].indexOf(key) >= 0)
 		onChange('settings_match_theme');
 	return value;
@@ -1685,6 +1690,16 @@ function initConfig(key) {
 		input.parentNode.appendChild(swatch);
 	}
 	input.onchange = function(event) {
+		if (key == 'weather_enabled' && input.type == 'checkbox' && input.checked && window.HumbleWeather) {
+			HumbleWeather.enableFromUserGesture().then(function(granted) {
+				if (granted) setConfig(key, 1);
+				else {
+					input.checked = false;
+					setConfig(key, 0);
+				}
+			});
+			return false;
+		}
 		if (key == 'show_history' && input.type == 'checkbox' && input.checked && window.HumbleHistory) {
 			HumbleHistory.requestPermission().then(function(granted) {
 				if (granted) setConfig(key, 1);
