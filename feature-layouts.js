@@ -351,6 +351,13 @@
 		rename.setAttribute('aria-label', 'Rename layout');
 		rename.textContent = '✎';
 
+		var undo = document.createElement('button');
+		undo.id = 'layout_undo_button';
+		undo.type = 'button';
+		undo.title = 'Undo last layout change';
+		undo.setAttribute('aria-label', 'Undo last layout change');
+		undo.textContent = '↶';
+
 		var del = document.createElement('button');
 		del.id = 'layout_delete_button';
 		del.type = 'button';
@@ -361,6 +368,7 @@
 		bar.appendChild(select);
 		bar.appendChild(add);
 		bar.appendChild(rename);
+		bar.appendChild(undo);
 		bar.appendChild(del);
 		document.body.appendChild(bar);
 
@@ -376,6 +384,9 @@
 		};
 		add.onclick = createLayout;
 		rename.onclick = renameLayout;
+		undo.onclick = function() {
+			if (window.HumbleUIControls) HumbleUIControls.undoLayout();
+		};
 		del.onclick = deleteLayout;
 		renderSwitcher();
 	}
