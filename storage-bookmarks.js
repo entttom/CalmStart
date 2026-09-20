@@ -1,6 +1,9 @@
 'use strict';
 
 (function(S) {
+	S.BOOKMARK_INDEX_KEY = S.PREFIX + 'bookmarkIndexV1';
+	S.BOOKMARK_INDEX_DIRTY_KEY = S.PREFIX + 'bookmarkIndexDirty';
+
 	S.folderFingerprint = function(node) {
 		if (!node || !node.children) return null;
 		var tokens = [];
@@ -31,14 +34,24 @@
 		});
 	};
 
+	S.bookmarkPathKey = function(rootIndex, path) {
+		var compact = (path || []).map(function(segment) {
+			return [segment.title || '', Number(segment.occurrence) || 0];
+		});
+		return String(rootIndex) + '|' + JSON.stringify(compact);
+	};
+
 	S.buildBookmarkIndex = function(tree) {
 		var index = {
 			root: tree && tree[0] ? tree[0] : null,
 			roots: [],
 			byId: Object.create(null),
+			byPathKey: Object.create(null),
 			folderEntries: [],
 			rootIdToIndex: Object.create(null),
-			rootIndexToId: Object.create(null)
+			rootIndexToId: Object.create(null),
+			builtAt: S.now(),
+			source: 'live'
 		};
 		if (!index.root) return index;
 		index.roots = index.root.children || [];
@@ -47,12 +60,17 @@
 			if (!node || node.url) return;
 			var entry = {
 				node: node,
+				id: String(node.id),
+				title: node.title || '',
+				childCount: (node.children || []).length,
 				rootIndex: rootIndex,
 				path: path.slice(0),
 				fingerprint: S.folderFingerprint(node)
 			};
-			index.byId[String(node.id)] = entry;
+			index.byId[entry.id] = entry;
+			index.byPathKey[S.bookmarkPathKey(rootIndex, path)] = entry.id;
 			index.folderEntries.push(entry);
+
 			var children = node.children || [];
 			var titleCounts = Object.create(null);
 			for (var i = 0; i < children.length; i++) {
@@ -72,6 +90,124 @@
 			walk(root, i, []);
 		}
 		return index;
+	};
+
+	S.serializeBookmarkIndex = function(index) {
+		if (!index) return null;
+		return {
+			v: 1,
+			builtAt: index.builtAt || S.now(),
+			roots: (index.roots || []).map(function(root) {
+				return { id: String(root.id), title: root.title || '' };
+			}),
+			entries: (index.folderEntries || []).map(function(entry) {
+				return {
+					id: String(entry.id || (entry.node && entry.node.id) || ''),
+					title: entry.title != null ? entry.title : ((entry.node && entry.node.title) || ''),
+					childCount: Number(entry.childCount != null ? entry.childCount : ((entry.node && entry.node.children || []).length)) || 0,
+					rootIndex: Number(entry.rootIndex) || 0,
+					path: S.clone(entry.path || []),
+					fingerprint: entry.fingerprint || null
+				};
+			})
+		};
+	};
+
+	S.hydrateBookmarkIndex = function(serialized) {
+		if (!serialized || serialized.v !== 1 || !Array.isArray(serialized.roots) || !Array.isArray(serialized.entries))
+			return null;
+
+		var index = {
+			root: null,
+			roots: serialized.roots.map(function(root) {
+				return { id: String(root.id), title: root.title || '' };
+			}),
+			byId: Object.create(null),
+			byPathKey: Object.create(null),
+			folderEntries: [],
+			rootIdToIndex: Object.create(null),
+			rootIndexToId: Object.create(null),
+			builtAt: Number(serialized.builtAt) || 0,
+			source: 'cache'
+		};
+
+		for (var r = 0; r < index.roots.length; r++) {
+			index.rootIdToIndex[String(index.roots[r].id)] = r;
+			index.rootIndexToId[String(r)] = String(index.roots[r].id);
+		}
+
+		for (var i = 0; i < serialized.entries.length; i++) {
+			var raw = serialized.entries[i] || {};
+			if (!raw.id) continue;
+			var entry = {
+				node: { id: String(raw.id), title: raw.title || '' },
+				id: String(raw.id),
+				title: raw.title || '',
+				childCount: Number(raw.childCount) || 0,
+				rootIndex: Number(raw.rootIndex) || 0,
+				path: S.clone(raw.path || []),
+				fingerprint: raw.fingerprint || null
+			};
+			index.byId[entry.id] = entry;
+			index.byPathKey[S.bookmarkPathKey(entry.rootIndex, entry.path)] = entry.id;
+			index.folderEntries.push(entry);
+		}
+		return index;
+	};
+
+	S.persistBookmarkIndex = function(index) {
+		if (!S.localArea || !index) return Promise.resolve(false);
+		var values = {};
+		values[S.BOOKMARK_INDEX_KEY] = S.serializeBookmarkIndex(index);
+		values[S.BOOKMARK_INDEX_DIRTY_KEY] = false;
+		return S.storageSet(S.localArea, values);
+	};
+
+	S.refreshBookmarkIndex = function() {
+		if (S.bookmarkIndexRefreshPromise) return S.bookmarkIndexRefreshPromise;
+		S.bookmarkIndexRefreshPromise = S.getBookmarkTree().then(function(tree) {
+			var index = S.buildBookmarkIndex(tree || []);
+			if (index.folderEntries.length || index.roots.length) {
+				S.bookmarkIndex = index;
+				return S.persistBookmarkIndex(index).then(function() { return index; });
+			}
+			return index;
+		}).then(function(index) {
+			S.bookmarkIndexRefreshPromise = null;
+			return index;
+		}, function(error) {
+			S.bookmarkIndexRefreshPromise = null;
+			throw error;
+		});
+		return S.bookmarkIndexRefreshPromise;
+	};
+
+	S.ensureBookmarkIndex = function(localData) {
+		localData = localData || {};
+		var dirty = !!localData[S.BOOKMARK_INDEX_DIRTY_KEY];
+		var cached = !dirty ? S.hydrateBookmarkIndex(localData[S.BOOKMARK_INDEX_KEY]) : null;
+		if (cached) {
+			S.bookmarkIndex = cached;
+			return Promise.resolve(cached);
+		}
+		return S.refreshBookmarkIndex();
+	};
+
+	S.scheduleBookmarkIndexRefresh = function() {
+		if (S.bookmarkIndexRefreshTimer) clearTimeout(S.bookmarkIndexRefreshTimer);
+		S.bookmarkIndexRefreshTimer = setTimeout(function() {
+			S.bookmarkIndexRefreshTimer = null;
+			S.refreshBookmarkIndex();
+		}, 250);
+	};
+
+	S.installBookmarkIndexListeners = function() {
+		if (S.bookmarkIndexListenersInstalled || !chrome.bookmarks) return;
+		S.bookmarkIndexListenersInstalled = true;
+		['onCreated', 'onRemoved', 'onChanged', 'onMoved', 'onChildrenReordered', 'onImportEnded'].forEach(function(name) {
+			var event = chrome.bookmarks[name];
+			if (event && event.addListener) event.addListener(S.scheduleBookmarkIndexRefresh);
+		});
 	};
 
 	S.PLACEMENT_PREFIX = 'dup:';
@@ -104,8 +240,8 @@
 			rootIndex: entry.rootIndex,
 			rootTitle: root ? (root.title || '') : '',
 			path: S.clone(entry.path),
-			title: entry.node.title || '',
-			childCount: (entry.node.children || []).length,
+			title: entry.title || (entry.node && entry.node.title) || '',
+			childCount: Number(entry.childCount) || 0,
 			fingerprint: entry.fingerprint
 		};
 	};
@@ -119,29 +255,20 @@
 		if (ref.kind === 'special' && S.SPECIAL_IDS.indexOf(ref.id) >= 0) return ref.id;
 		if (ref.kind !== 'bookmark' || !S.bookmarkIndex) return null;
 
-		var root = S.bookmarkIndex.roots[ref.rootIndex];
+		var rootIndex = Number(ref.rootIndex) || 0;
+		var root = S.bookmarkIndex.roots[rootIndex];
 		if ((!root || (ref.rootTitle && (root.title || '') !== ref.rootTitle)) && ref.rootTitle) {
 			for (var r = 0; r < S.bookmarkIndex.roots.length; r++) {
 				if ((S.bookmarkIndex.roots[r].title || '') === ref.rootTitle) {
 					root = S.bookmarkIndex.roots[r];
+					rootIndex = r;
 					break;
 				}
 			}
 		}
 
-		var node = root || null;
-		var path = ref.path || [];
-		for (var p = 0; node && p < path.length; p++) {
-			var segment = path[p];
-			var children = node.children || [];
-			var matches = [];
-			for (var c = 0; c < children.length; c++) {
-				if (!children[c].url && (children[c].title || '') === segment.title)
-					matches.push(children[c]);
-			}
-			node = matches[segment.occurrence || 0] || null;
-		}
-		if (node && !node.url) return String(node.id);
+		var direct = S.bookmarkIndex.byPathKey[S.bookmarkPathKey(rootIndex, ref.path || [])];
+		if (direct) return String(direct);
 
 		// Fallback for renamed/restructured non-empty folders: compare a stable
 		// fingerprint of immediate contents, then prefer the old title/root. Empty
@@ -157,17 +284,17 @@
 		}
 		if (candidates.length > 1 && ref.title) {
 			var titled = candidates.filter(function(entry) {
-				return (entry.node.title || '') === ref.title;
+				return (entry.title || (entry.node && entry.node.title) || '') === ref.title;
 			});
 			if (titled.length) candidates = titled;
 		}
 		if (candidates.length > 1) {
 			var sameRoot = candidates.filter(function(entry) {
-				return entry.rootIndex === ref.rootIndex;
+				return entry.rootIndex === Number(ref.rootIndex);
 			});
 			if (sameRoot.length) candidates = sameRoot;
 		}
-		return candidates.length ? String(candidates[0].node.id) : null;
+		return candidates.length ? String(candidates[0].id || (candidates[0].node && candidates[0].node.id)) : null;
 	};
 
 	S.columnsFromValues = function(values) {
