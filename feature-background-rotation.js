@@ -6,8 +6,7 @@
 
 	function readUrls() {
 		var raw = localStorage.getItem('options.background_rotation_urls') || '';
-		return raw.split(/?
-/).map(function(value) { return value.trim(); }).filter(Boolean);
+		return raw.split(/\r?\n/).map(function(value) { return value.trim(); }).filter(Boolean);
 	}
 
 	function intervalMinutes() {
@@ -73,9 +72,9 @@
 		refresh();
 	}
 
-	window.addEventListener('load', function() {
-		setTimeout(start, 0);
-	});
+	var ready = window.HumbleStorage && window.HumbleStorage.ready;
+	if (ready && typeof ready.then === 'function') ready.then(start);
+	else window.addEventListener('load', function() { setTimeout(start, 0); });
 
 	window.HumbleBackgroundRotation = {
 		refresh: refresh,
