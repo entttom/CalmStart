@@ -492,7 +492,7 @@ function enableDragFolder(node, a) {
 	a.ondragstart = function(event) {
 		dragIds = [node.layoutId || node.id];
 		event.stopPropagation();
-		event.dataTransfer.effectAllowed = 'move copy';
+		event.dataTransfer.effectAllowed = 'copyMove';
 		this.classList.add('dragstart');
 	};
 	a.ondragend = function(event) {
@@ -503,6 +503,10 @@ function enableDragFolder(node, a) {
 }
 
 // init drag and drop handlers
+function isColumnElement(element) {
+	return !!(element && element.classList && element.classList.contains('column'));
+}
+
 function enableDragDrop() {
 	var main = document.getElementById('main');
 
@@ -514,9 +518,10 @@ function enableDragDrop() {
 	}
 
 	main.ondragover = function(event) {
+		if (!dragIds || !dragIds.length) return true;
 		event.preventDefault();
-		event.dataTransfer.dropEffect = 'move';
-		// highlight drop target
+		event.dataTransfer.dropEffect = event.altKey && dragIds.length == 1 ? 'copy' : 'move';
+
 		var target = getDropTarget(event);
 		if (target) {
 			clearDropTarget();
@@ -530,8 +535,9 @@ function enableDragDrop() {
 					target.style.borderTop = bordercss;
 					target.style.margin = '-2px 0 0 0';
 				}
-			} else if (target.className == 'column') {
-				if (event.pageX - target.offsetLeft > target.clientWidth / 2) {
+			} else if (isColumnElement(target)) {
+				var rect = target.getBoundingClientRect();
+				if (event.clientX - rect.left > rect.width / 2) {
 					target.style.borderRight = bordercss;
 					target.style.margin = '0';
 				} else {
@@ -544,68 +550,94 @@ function enableDragDrop() {
 	};
 
 	main.ondragleave = function(event) {
-		clearDropTarget();
+		var related = event.relatedTarget;
+		if (!related || !main.contains(related))
+			clearDropTarget();
 	};
 
 	main.ondrop = function(event) {
+		event.preventDefault();
 		event.stopPropagation();
 
 		var target = getDropTarget(event);
-		if (!target)
+		if (!target || !dragIds || !dragIds.length) {
+			clearDropTarget();
 			return false;
-
-		// calculate drop coordinates
-		var x = getDropX(target, event);
-		var y = getDropY(target, event);
-
-		if (dragIds.length == 1 && y != null)
-			addRow(dragIds[0], x, y);
-		else {
-			if (event.pageX - target.offsetLeft > target.clientWidth / 2)
-				x++;
-			addColumn(dragIds, x);
 		}
 
+		var x = getDropX(target);
+		var y = getDropY(target, event);
+		if (x == null) {
+			clearDropTarget();
+			return false;
+		}
+
+		var ids = dragIds.slice(0);
+		var copySingle = event.altKey && ids.length == 1;
+		if (copySingle)
+			ids[0] = createDuplicatePlacement(layoutBaseId(ids[0]));
+
+		if (ids.length == 1 && y != null)
+			addRow(ids[0], x, y);
+		else {
+			var column = getColumnElement(target);
+			if (column) {
+				var rect = column.getBoundingClientRect();
+				if (event.clientX - rect.left > rect.width / 2) x++;
+			}
+			addColumn(ids, x);
+		}
+
+		clearDropTarget();
 		return false;
 	};
 }
 
-// gets proper drop target element
-function getDropTarget(event) {
-	if (!dragIds)
-		return null;
-	var target = event.target;
-	if (target && (target.tagName == 'A' || target.parentNode.tagName == 'A') && dragIds.length == 1) {
-		// get parent folder until toplevel
-		while (target &&
-			target.parentNode.parentNode &&
-			target.parentNode.parentNode.className != 'column') {
-			// target should be LI
-			target = target.parentNode;
-		}
-		// if single-folder column, get the UL
-		if (target && target.tagName == 'LI' &&
-			columns[getDropX(target, event)].length == 1)
-			target = target.parentNode;
-		// target should be LI or UL by here...
-	} else
-		while (target && target.className != 'column')
-			target = target.parentNode;// target column
-
+function getColumnElement(target) {
+	if (!target) return null;
+	if (isColumnElement(target)) return target;
+	if (target.closest) return target.closest('.column');
+	while (target && !isColumnElement(target)) target = target.parentNode;
 	return target;
 }
 
-// gets x coordinate of drop target
-function getDropX(target, event) {
-	var x = null;
-	while (target && target.className != 'column')
-		target = target.parentNode;
-	if (target) {
-		x = 0;
-		for (; target.previousSibling; x++)
-			target = target.previousSibling;
+// gets proper drop target element
+function getDropTarget(event) {
+	if (!dragIds || !dragIds.length) return null;
+
+	var target = event.target;
+	if (!target) return null;
+	var anchor = target.tagName == 'A' ? target : (target.closest ? target.closest('a') : null);
+
+	if (anchor && dragIds.length == 1) {
+		var li = anchor.closest ? anchor.closest('li') : anchor.parentNode;
+		var column = getColumnElement(anchor);
+		if (!column) return null;
+
+		// Walk to the top-level LI inside the column.
+		while (li && li.parentNode && !isColumnElement(li.parentNode)) {
+			var parentList = li.parentNode;
+			var parentLi = parentList.closest ? parentList.closest('li') : null;
+			if (!parentLi || getColumnElement(parentLi) !== column) break;
+			li = parentLi;
+		}
+
+		var x = getDropX(column);
+		if (li && x != null && columns[x] && columns[x].length == 1)
+			return li.parentNode && li.parentNode.tagName == 'UL' ? li.parentNode : li;
+		return li || column;
 	}
-	return x;
+
+	return getColumnElement(target);
+}
+
+// gets x coordinate of drop target
+function getDropX(target) {
+	var column = getColumnElement(target);
+	if (!column) return null;
+	var columnsList = Array.prototype.slice.call(document.querySelectorAll('#main > .column'));
+	var x = columnsList.indexOf(column);
+	return x >= 0 ? x : null;
 }
 
 // gets y coordinate of drop target
@@ -613,19 +645,18 @@ function getDropY(target, event) {
 	var y = null;
 	if (target.tagName == 'LI') {
 		y = 0;
-		if (isAbove(event.pageY, target))
+		if (isAbove(event.pageY, target)) y++;
+		for (var sibling = target.previousElementSibling; sibling; sibling = sibling.previousElementSibling)
 			y++;
-		for (; target.previousSibling; y++)
-			target = target.previousSibling;
 	} else if (target.tagName == 'UL') {
-		y = 0;
-		if (isAbove(event.pageY, target))
-			y++;
+		y = target.children.length;
+		if (target.children.length && !isAbove(event.pageY, target))
+			y = 0;
 	}
 	return y;
 }
 
-// returns true if y position is above target element midpoint
+// returns true if pointer is below target element midpoint
 function isAbove(pageY, target) {
 	return pageY - window.scrollY - target.getBoundingClientRect().top > target.clientHeight / 2;
 }
@@ -633,8 +664,12 @@ function isAbove(pageY, target) {
 // clears droptarget styles
 function clearDropTarget() {
 	if (dropTarget) {
-		dropTarget.style.border = null;
-		dropTarget.style.margin = null;
+		dropTarget.style.border = '';
+		dropTarget.style.borderTop = '';
+		dropTarget.style.borderBottom = '';
+		dropTarget.style.borderLeft = '';
+		dropTarget.style.borderRight = '';
+		dropTarget.style.margin = '';
 	}
 	dropTarget = null;
 }
