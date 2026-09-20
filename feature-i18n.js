@@ -198,7 +198,30 @@
 		'Delete layout': 'Layout löschen',
 		'Undo last layout change': 'Letzte Layoutänderung rückgängig machen',
 		'Show background only': 'Nur Hintergrund anzeigen',
-		'Show Humble content': 'Humble-Inhalte anzeigen'
+		'Show Humble content': 'Humble-Inhalte anzeigen',
+		'Contrast backplate': 'Kontrastfläche',
+		'Dark': 'Dunkel',
+		'Match settings to page colors': 'Optionen an Seitenfarben anpassen',
+		'Refresh URL every': 'URL aktualisieren alle',
+		'Minutes; 0 disables automatic refresh.': 'Minuten; 0 deaktiviert die automatische Aktualisierung.',
+		'Weather': 'Wetter',
+		'Location': 'Ort',
+		'Units': 'Einheiten',
+		'Refresh weather': 'Wetter aktualisieren',
+		'Weather: set a location': 'Wetter: Ort festlegen',
+		'Weather…': 'Wetter…',
+		'Weather unavailable': 'Wetter nicht verfügbar',
+		'Clear': 'Klar',
+		'Mainly clear': 'Überwiegend klar',
+		'Partly cloudy': 'Teilweise bewölkt',
+		'Overcast': 'Bedeckt',
+		'Fog': 'Nebel',
+		'Drizzle': 'Nieselregen',
+		'Rain': 'Regen',
+		'Snow': 'Schnee',
+		'Rain showers': 'Regenschauer',
+		'Snow showers': 'Schneeschauer',
+		'Thunderstorm': 'Gewitter'
 	};
 
 	var dictionaries = { de: de };
