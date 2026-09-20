@@ -1206,7 +1206,10 @@ var config = {
 	dark_mode: 0,
 	show_icons: 1,
 	icon_size: 16,
-	high_quality_icons: 1
+	high_quality_icons: 1,
+	show_clock: 0,
+	clock_24h: 1,
+	web_search_engine: 'off'
 };
 
 // color theme values
@@ -1459,6 +1462,9 @@ function onChange(key, value) {
 		onChange('width');
 		onChange('v_margin');
 	}
+
+	if ((key == 'show_clock' || key == 'clock_24h') && window.HumbleClock)
+		HumbleClock.refresh();
 
 	// update options panel
 	if (!settingsInitialized)
