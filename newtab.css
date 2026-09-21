@@ -1032,3 +1032,100 @@ textarea {
 		display: none;
 	}
 }
+
+
+/* CalmStart UI 2.2 — compact settings density */
+#options fieldset {
+	padding: 10px 14px 8px;
+	margin-bottom: 12px;
+}
+#options legend {
+	font-size: .9em;
+}
+#options fieldset > label:not(.diagnostic-log-label) {
+	min-height: 32px;
+	padding: 2px 0;
+	line-height: 1.2;
+}
+#options fieldset > label:not(.diagnostic-log-label) > span {
+	line-height: 1.2;
+}
+#options input[type="text"],
+#options input[type="url"],
+#options input[type="number"],
+#options select {
+	height: 30px;
+	min-height: 30px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+#options input[type="range"] {
+	height: 28px;
+}
+#options input[type="color"] {
+	height: 27px;
+}
+#options input[type="checkbox"] {
+	width: 34px;
+	height: 18px;
+}
+#options input[type="checkbox"]:after {
+	width: 14px;
+	height: 14px;
+}
+#options input[type="checkbox"]:checked:after {
+	transform: translateX(16px);
+}
+#options input[type="file"] {
+	min-height: 30px;
+}
+#options input[type="file"]::file-selector-button {
+	height: 27px;
+}
+#options label.subopt {
+	min-height: 30px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+#options label.subopt > span {
+	line-height: 1.15;
+}
+#options .revert {
+	min-height: 28px;
+}
+#options .diagnostic-actions {
+	margin-top: 9px;
+}
+#options .diagnostic-actions button {
+	padding: 6px 9px;
+}
+#options fieldset > label:has(textarea) {
+	padding-top: 3px;
+}
+#options textarea {
+	min-height: 150px;
+}
+
+/* Long labels should use a second line only when the available label
+   column genuinely is too narrow, rather than because of loose spacing. */
+#options fieldset > label:not(.diagnostic-log-label) {
+	grid-template-columns: minmax(220px, 1fr) var(--cs-control-width);
+	column-gap: 20px;
+}
+#options label > span {
+	overflow-wrap: normal;
+	word-break: normal;
+}
+
+@media (max-width: 720px) {
+	#options fieldset > label:not(.diagnostic-log-label) {
+		grid-template-columns: minmax(160px, 1fr) var(--cs-control-width);
+		column-gap: 12px;
+	}
+}
+@media (max-width: 520px) {
+	#options fieldset > label:not(.diagnostic-log-label) {
+		grid-template-columns: 1fr;
+		padding: 7px 0;
+	}
+}
