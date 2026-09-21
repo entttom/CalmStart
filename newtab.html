@@ -7,13 +7,24 @@
 <link rel="icon" href="icons/icon_16.png">
 </head>
 <body>
-<div id="search_area">\n\t<div id="search_box">\n\t\t<span id="search_icon" aria-hidden="true"></span>\n\t\t<input id="calm_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search bookmarks or the web" aria-label="Search bookmarks or the web">\n\t\t<span id="search_provider">Google</span>\n\t</div>\n\t<div id="search_results" hidden></div>\n</div>\n<div id="main">\n</div>
+<div id="search_area">
+	<div id="search_box">
+		<span id="search_icon" aria-hidden="true"></span>
+		<input id="calm_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search bookmarks or the web" aria-label="Search bookmarks or the web">
+		<span id="search_provider">Google</span>
+	</div>
+	<div id="search_results" hidden></div>
+</div>
+<div id="search_page_results" hidden></div>
+<div id="main">
+</div>
 <a id="options_button" title="Options" tabindex="0"></a>
 <div id="options">
 	<a id="options_close_button" title="Close" tabindex="0">&times;</a>
 	<ul id="options_nav">
 		<li><a class="current" tabindex="0">Settings</a></li>
 		<li><a tabindex="0">Appearance</a></li>
+		<li><a tabindex="0">Search</a></li>
 		<li><a tabindex="0">Import/Export</a></li>
 		<li><a tabindex="0">Advanced</a></li>
 	</ul>
@@ -113,6 +124,33 @@
 			<option value="repeat-y">Vertical</option>
 			<option value="no-repeat">None</option>
 		</select></label>
+	</fieldset>
+	</div><div class="section" id="search_settings_section">
+	<fieldset>
+		<legend>Search</legend>
+		<label><span>Search scope</span><select id="options_search_scope">
+			<option value="bookmarks_web">Bookmarks + web</option>
+			<option value="bookmarks">Bookmarks only</option>
+		</select></label>
+		<label><span>Results display</span><select id="options_search_display">
+			<option value="dropdown">Dropdown below search</option>
+			<option value="page">Filter page</option>
+		</select></label>
+	</fieldset>
+	<fieldset id="search_engine_settings">
+		<legend>Web search</legend>
+		<label><span>Search engine</span><select id="options_search_engine">
+			<option value="google">Google</option>
+			<option value="duckduckgo">DuckDuckGo</option>
+			<option value="bing">Bing</option>
+			<option value="custom">Custom</option>
+		</select></label>
+		<label id="search_custom_pattern_row"><span>Custom search URL</span><input id="options_search_custom_pattern" type="text" placeholder="https://example.com/search?q=%s"/></label>
+		<p class="settings-help">Use <code>%s</code> where the encoded search term should be inserted.</p>
+	</fieldset>
+	<fieldset>
+		<legend>Behavior</legend>
+		<p class="settings-help"><strong>Dropdown</strong> shows matching bookmarks beneath the search field. <strong>Filter page</strong> temporarily replaces the normal columns with matching bookmarks grouped by folder. Clearing the search restores your normal layout.</p>
 	</fieldset>
 	</div><div class="section">
 	<fieldset>
