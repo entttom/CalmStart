@@ -1222,3 +1222,17 @@ textarea {
 		grid-template-columns: 1fr;
 	}
 }
+
+
+/* Search belongs to the new-tab content, never above the settings dialog. */
+body:has(#options[style*="display: block"]) #search_area,
+body:has(#options[style*="display: block"]) #search_page_results {
+	visibility: hidden;
+	pointer-events: none;
+}
+#options {
+	z-index: 1000;
+}
+#options_button {
+	z-index: 900;
+}
