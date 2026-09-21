@@ -1095,6 +1095,7 @@ var config = {
 	number_closed: 10,
 	number_recent: 10,
 	search_scope: 'bookmarks_web',
+	search_bookmark_source: 'startpage',
 	search_display: 'dropdown',
 	search_engine: 'google',
 	search_custom_pattern: 'https://www.google.com/search?q=%s'
@@ -1890,11 +1891,18 @@ if (chrome.sessions)
 		});
 	}
 
+	function searchBookmarks(query, callback) {
+		if (getConfig('search_bookmark_source') === 'all')
+			chrome.bookmarks.search(query, callback);
+		else
+			searchStartPageBookmarks(query, callback);
+	}
+
 	function runSearch() {
 		var query = input.value.trim();
 		var serial = ++searchSerial;
 		if (!query) { clearSearchResults(); return; }
-		searchStartPageBookmarks(query, function(found) {
+		searchBookmarks(query, function(found) {
 			if (serial !== searchSerial || input.value.trim() !== query) return;
 			var nodes = sortedMatches(found, query);
 			if (pageMode()) renderPage(nodes);
