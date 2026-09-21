@@ -1791,6 +1791,7 @@ if (chrome.sessions)
 
 	function renderPage(nodes) {
 		hideDropdown();
+		matches = nodes;
 		main.hidden = true;
 		pageResults.innerHTML = '';
 		pageResults.hidden = false;
