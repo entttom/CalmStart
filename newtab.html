@@ -138,7 +138,11 @@
 		</select></label>
 		<label><span>Results display</span><select id="options_search_display">
 			<option value="dropdown">Dropdown below search</option>
-			<option value="page">Filter page</option>
+			<option value="page">Full page</option>
+		</select></label>
+		<label id="search_page_mode_row"><span>Full-page behavior</span><select id="options_search_page_mode">
+			<option value="layout">Filter current layout</option>
+			<option value="results">Show matching bookmarks</option>
 		</select></label>
 	</fieldset>
 	<fieldset id="search_engine_settings">
@@ -154,7 +158,7 @@
 	</fieldset>
 	<fieldset>
 		<legend>Behavior</legend>
-		<p class="settings-help"><strong>Dropdown</strong> shows matches from the selected bookmark source beneath the search field. <strong>Filter page</strong> filters only the bookmarks already visible in the current CalmStart layout and preserves its columns and folder positions. Matches outside that layout are available through the dropdown display. Clearing the search restores the normal layout.</p>
+		<p class="settings-help"><strong>Dropdown</strong> shows matches from the selected bookmark source beneath the search field. On the <strong>Full page</strong>, choose whether to filter the current layout in place or show matching bookmarks in a separate results page. Clearing the search restores the normal layout.</p>
 	</fieldset>
 	</div><div class="section">
 	<fieldset>
