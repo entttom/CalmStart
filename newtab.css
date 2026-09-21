@@ -1151,7 +1151,7 @@ textarea {
 #search_custom_pattern_row[hidden] {
 	display: none !important;
 }
-#search_page_mode_row[hidden] {
+#search_bookmark_source_row[hidden] {
 	display: none !important;
 }
 #options_search_custom_pattern:invalid {
