@@ -1,5 +1,11 @@
 'use strict';
 
+var i18nText = function(key, substitutions) {
+	if (window.CalmStartI18n && window.CalmStartI18n.t)
+		return window.CalmStartI18n.t(key, substitutions);
+	return key;
+};
+
 // render a single bookmark node
 function render(node, target) {
 	if (node.description == 'separator') return;
@@ -89,7 +95,7 @@ function renderAll(nodes, target, toplevel) {
 			render(node, ul);
 	}
 	if (ul.childNodes.length === 0)
-		render({ id: 'empty', title: '< Empty >' }, ul);
+		render({ id: 'empty', title: i18nText('< Empty >') }, ul);
 	if (toplevel)
 		target.appendChild(ul);
 	else {
@@ -168,7 +174,7 @@ function addFolderHandlers(node, a) {
 	if (!getConfig('lock')) {
 		items.push(null);// spacer
 		items.push({
-			label: 'Create new column',
+			label: i18nText('Create new column'),
 			action: function() {
 				addColumn([node.id]);
 			}
@@ -178,35 +184,35 @@ function addFolderHandlers(node, a) {
 			var pos = coords[node.id];
 			if (pos.y > 0)
 				items.push({
-					label: 'Move folder up',
+					label: i18nText('Move folder up'),
 					action: function() {
 						addRow(node.id, pos.x, pos.y - 1);
 					}
 				});
 			if (pos.y < columns[pos.x].length - 1)
 				items.push({
-					label: 'Move folder down',
+					label: i18nText('Move folder down'),
 					action: function() {
 						addRow(node.id, pos.x, pos.y + 2);
 					}
 				});
 			if (pos.x > 0)
 				items.push({
-					label: 'Move folder left',
+					label: i18nText('Move folder left'),
 					action: function() {
 						addRow(node.id, pos.x - 1);
 					}
 				});
 			if (pos.x < columns.length - 1)
 				items.push({
-					label: 'Move folder right',
+					label: i18nText('Move folder right'),
 					action: function() {
 						addRow(node.id, pos.x + 1);
 					}
 				});
 			if (root.indexOf(node.id) < 0)
 				items.push({
-					label: 'Remove folder',
+					label: i18nText('Remove folder'),
 					action: function() {
 						removeRow(pos.x, pos.y);
 					}
@@ -234,20 +240,20 @@ function addColumnHandlers(index, ul) {
 		items.push(null);// spacer
 		if (index > 0)
 			items.push({
-				label: 'Move column left',
+				label: i18nText('Move column left'),
 				action: function() {
 					addColumn(ids, index - 1);
 				}
 			});
 		if (index < columns.length - 1)
 			items.push({
-				label: 'Move column right',
+				label: i18nText('Move column right'),
 				action: function() {
 					addColumn(ids, index + 2);
 				}
 			});
 		items.push({
-			label: 'Remove column',
+			label: i18nText('Remove column'),
 			action: function() {
 				removeColumn(index);
 			}
@@ -255,14 +261,14 @@ function addColumnHandlers(index, ul) {
 		if (ids.length == 1) {
 			if (index > 0)
 				items.push({
-					label: 'Move folder left',
+					label: i18nText('Move folder left'),
 					action: function() {
 						addRow(ids[0], index - 1);
 					}
 				});
 			if (index < columns.length - 1)
 				items.push({
-					label: 'Move folder right',
+					label: i18nText('Move folder right'),
 					action: function() {
 						addRow(ids[0], index + 1);
 					}
@@ -283,28 +289,28 @@ function addColumnHandlers(index, ul) {
 function getMenuItems(node) {
 	var items = [];
 		items.push({
-			label: 'Open all links in folder',
+			label: i18nText('Open all links in folder'),
 			action: function() {
 				openLinks(node);
 			}
 		});
 	if (node.id == 'closed')
 		items.push({
-			label: 'Clear browsing data',
+			label: i18nText('Clear browsing data'),
 			action: function() {
 				openLink({ url: 'chrome://settings/clearBrowserData' }, 1);
 			}
 		});
 	if (node.id == 'devices')
 		items.push({
-			label: 'History',
+			label: i18nText('History'),
 			action: function() {
 				openLink({ url: 'chrome://history' }, 1);
 			}
 		});
 	if (Number(node.id))
 		items.push({
-			label: 'Edit bookmarks',
+			label: i18nText('Edit bookmarks'),
 			action: function() {
 				openLink({ url: 'chrome://bookmarks/?id=' + node.id }, 1);
 			}
@@ -631,19 +637,19 @@ function getChildrenFunction(node) {
 function getSubTree(id, callback) {
 	switch(id) {
 		case 'top':
-			callback([{ title: 'Most visited', id: 'top', children: true}]);
+			callback([{ title: i18nText('Most visited'), id: 'top', children: true}]);
 			break;
 		case 'apps':
-			callback([{ title: 'Apps', id: 'apps', url: 'chrome://apps' }]);
+			callback([{ title: i18nText('Apps'), id: 'apps', url: 'chrome://apps' }]);
 			break;
 		case 'recent':
-			callback([{ title: 'Recent bookmarks', id: 'recent', children: true }]);
+			callback([{ title: i18nText('Recent bookmarks'), id: 'recent', children: true }]);
 			break;
 		case 'closed':
-			callback([{ title: 'Recently closed', id: 'closed', children: true }]);
+			callback([{ title: i18nText('Recently closed'), id: 'closed', children: true }]);
 			break;
 		case 'devices':
-			callback([{ title: 'Other devices', id: 'devices', children: true }]);
+			callback([{ title: i18nText('Other devices'), id: 'devices', children: true }]);
 			break;
 		default:
 			chrome.bookmarks.getSubTree(id, function(result) {
@@ -1423,7 +1429,7 @@ function initConfig(key) {
 
 	var reset = document.createElement('a');
 	reset.className = 'revert';
-	reset.title = 'Reset to default';
+	reset.title = i18nText('Reset to default');
 	reset.tabIndex = 0;
 	reset.onclick = function() {
 		setConfig(key, null);
@@ -1484,7 +1490,7 @@ function initSettings() {
 				};
 				exports.value = JSON.stringify(localStorage, replacer);
 				imports.value = '';
-				imports.placeholder = 'Paste exported settings here';
+				imports.placeholder = i18nText('Paste exported settings here');
 				imports.onchange = function() {
 					try {
 						var imported = JSON.parse(imports.value);
@@ -1492,13 +1498,13 @@ function initSettings() {
 							localStorage.setItem(key, imported[key]);
 						}
 						imports.value = '';
-						imports.placeholder = 'Import successful!';
+						imports.placeholder = i18nText('Import successful!');
 						exports.value = JSON.stringify(localStorage, replacer);
 						loadSettings();
 						loadColumns();
 					} catch (e) {
 						imports.value = '';
-						imports.placeholder = 'Import error! Please check if your settings are valid JSON.';
+						imports.placeholder = i18nText('Import error! Please check if your settings are valid JSON.');
 					}
 				};
 			}
@@ -1656,8 +1662,8 @@ if (chrome.sessions)
 	function updateSearchChrome() {
 		var web = webEnabled();
 		var info = engineInfo();
-		provider.textContent = web ? info.name : 'Bookmarks';
-		input.placeholder = web ? 'Search bookmarks or the web' : 'Search bookmarks';
+		provider.textContent = web ? info.name : i18nText('Bookmarks');
+		input.placeholder = web ? i18nText('Search bookmarks or the web') : i18nText('Search bookmarks');
 		input.setAttribute('aria-label', input.placeholder);
 
 		var bookmarkSourceRow = document.getElementById('search_bookmark_source_row');
@@ -1697,7 +1703,7 @@ if (chrome.sessions)
 		if (getConfig('search_engine') === 'custom' && !validCustomPattern(pattern)) {
 			var custom = document.getElementById('options_search_custom_pattern');
 			if (custom) {
-				custom.setCustomValidity('Enter an http(s) URL containing %s.');
+				custom.setCustomValidity(i18nText('Enter an http(s) URL containing %s.'));
 				custom.reportValidity();
 			}
 			return;
@@ -1783,11 +1789,11 @@ if (chrome.sessions)
 			webText.className = 'search-result-copy';
 			var webTitle = document.createElement('span');
 			webTitle.className = 'search-result-title';
-			webTitle.textContent = 'Search ' + engineInfo().name + ' for “' + query + '”';
+			webTitle.textContent = i18nText('Search {engine} for “{query}”', {engine: engineInfo().name, query: query});
 			webText.appendChild(webTitle);
 			var webHint = document.createElement('span');
 			webHint.className = 'search-result-url';
-			webHint.textContent = 'Web search';
+			webHint.textContent = i18nText('Web search');
 			webText.appendChild(webHint);
 			web.appendChild(webText);
 			web.addEventListener('click', function() { webSearch(query); });
