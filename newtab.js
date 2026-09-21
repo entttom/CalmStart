@@ -1098,7 +1098,8 @@ var config = {
 	search_bookmark_source: 'startpage',
 	search_display: 'dropdown',
 	search_engine: 'google',
-	search_custom_pattern: 'https://www.google.com/search?q=%s'
+	search_custom_pattern: 'https://www.google.com/search?q=%s',
+	search_page_mode: 'layout'
 };
 
 // color theme values
@@ -1642,6 +1643,7 @@ if (chrome.sessions)
 	function normalize(value) { return (value || '').toLocaleLowerCase(); }
 	function webEnabled() { return getConfig('search_scope') !== 'bookmarks'; }
 	function pageMode() { return getConfig('search_display') === 'page'; }
+	function pageResultMode() { return getConfig('search_page_mode') === 'results'; }
 
 	function engineInfo() {
 		var key = getConfig('search_engine');
@@ -1659,6 +1661,9 @@ if (chrome.sessions)
 		provider.textContent = web ? info.name : 'Bookmarks';
 		input.placeholder = web ? 'Search bookmarks or the web' : 'Search bookmarks';
 		input.setAttribute('aria-label', input.placeholder);
+
+		var pageModeRow = document.getElementById('search_page_mode_row');
+		if (pageModeRow) pageModeRow.hidden = !pageMode();
 
 		var engineFieldset = document.getElementById('search_engine_settings');
 		if (engineFieldset) engineFieldset.classList.toggle('settings-disabled', !web);
@@ -1795,7 +1800,7 @@ if (chrome.sessions)
 
 	// Filter the already rendered CalmStart columns in place. This deliberately
 	// preserves column widths, folder positions and the normal start-page design.
-	function renderPage(nodes) {
+	function renderLayoutFilter(nodes) {
 		hideDropdown();
 		matches = nodes;
 		pageResults.hidden = true;
@@ -1833,6 +1838,66 @@ if (chrome.sessions)
 			var visibleLink = childWrap.querySelector('li:not(.calm-search-hidden) a[href]');
 			folderLi.classList.toggle('calm-search-hidden', !visibleLink);
 		}
+	}
+
+	// Render a separate results page. Unlike the layout filter, this can show
+	// matches from every folder in the configured bookmark source.
+	function renderPageResults(nodes) {
+		hideDropdown();
+		matches = nodes;
+		main.hidden = true;
+		pageResults.innerHTML = '';
+		pageResults.hidden = false;
+		if (!nodes.length) {
+			var empty = document.createElement('div');
+			empty.className = 'search-page-empty';
+			empty.textContent = 'No matching bookmarks';
+			pageResults.appendChild(empty);
+			return;
+		}
+
+		var groups = Object.create(null), parentIds = [];
+		nodes.slice(0, 60).forEach(function(node) {
+			var id = node.parentId || 'root';
+			if (!groups[id]) { groups[id] = []; parentIds.push(id); }
+			groups[id].push(node);
+		});
+		var pending = parentIds.length;
+		var titles = Object.create(null);
+		function finish() {
+			if (--pending > 0) return;
+			parentIds.forEach(function(id) {
+				var section = document.createElement('section');
+				section.className = 'search-page-group';
+				var heading = document.createElement('div');
+				heading.className = 'search-page-folder';
+				heading.textContent = titles[id] || 'Bookmarks';
+				section.appendChild(heading);
+				var list = document.createElement('ul');
+				groups[id].forEach(function(node) {
+					var li = document.createElement('li');
+					var a = document.createElement('a');
+					a.href = node.url;
+					a.textContent = node.title || node.url;
+					a.insertBefore(getIcon(node), a.firstChild);
+					a.onclick = function(event) {
+						event.preventDefault();
+						openLink(node, getConfig('newtab'));
+					};
+					li.appendChild(a);
+					list.appendChild(li);
+				});
+				section.appendChild(list);
+				pageResults.appendChild(section);
+			});
+		}
+		parentIds.forEach(function(id) {
+			if (id === 'root') { titles[id] = 'Bookmarks'; finish(); return; }
+			chrome.bookmarks.get(id, function(found) {
+				titles[id] = found && found[0] ? found[0].title : 'Bookmarks';
+				finish();
+			});
+		});
 	}
 
 	function visibleBookmarkRootIds() {
@@ -1895,8 +1960,10 @@ if (chrome.sessions)
 		searchBookmarks(query, function(found) {
 			if (serial !== searchSerial || input.value.trim() !== query) return;
 			var nodes = sortedMatches(found, query);
-			if (pageMode()) renderPage(nodes);
-			else renderDropdown(nodes, query);
+			if (pageMode()) {
+				if (pageResultMode()) renderPageResults(nodes);
+				else renderLayoutFilter(nodes);
+			} else renderDropdown(nodes, query);
 		});
 	}
 
