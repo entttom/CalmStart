@@ -1236,3 +1236,9 @@ body:has(#options[style*="display: block"]) #search_page_results {
 #options_button {
 	z-index: 900;
 }
+
+
+/* In-place search filtering keeps the normal CalmStart column layout intact. */
+#main .calm-search-hidden {
+	display: none !important;
+}
