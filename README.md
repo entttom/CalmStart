@@ -10,7 +10,7 @@ CalmStart keeps the lightweight, column-based experience of Humble New Tab Page 
 - Bookmark folders arranged in flexible columns
 - Drag-and-drop layout
 - Search selected bookmark folders or all bookmarks, with optional web search
-- Filter the existing CalmStart layout in place, preserving its columns and folder positions
+- Choose between filtering the existing layout and a separate full results page
 - Custom fonts, colors, spacing and backgrounds
 - Most visited, recent bookmarks, recently closed tabs and other devices
 - Browser-native sync for settings and layout
@@ -23,7 +23,7 @@ CalmStart keeps the lightweight, column-based experience of Humble New Tab Page 
 CalmStart offers two result displays:
 
 - **Dropdown** searches the selected bookmark source and shows matching bookmarks below the search field.
-- **Filter page** deliberately filters only bookmarks that are already visible in the current CalmStart layout. It preserves the existing columns and folder positions instead of rendering a separate result page. To find bookmarks outside that layout, use the dropdown display.
+- **Full page** offers two behaviors: **Filter current layout** preserves the existing columns and folder positions, while **Show matching bookmarks** renders a separate grouped result page from the selected bookmark source.
 
 ## Sync
 
