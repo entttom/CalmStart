@@ -1347,7 +1347,7 @@ function onChange(key, value) {
 	var input = document.getElementById('options_' + key);
 	if (input) {
 		var isDefault = value == (theme.hasOwnProperty(key) ? theme[key] : config[key]);
-		input.reset.style.visibility = (isDefault ? 'hidden' : null);
+		// Some controls (for example checkboxes/radios) do not have a reset button.\r\n		if (input.reset)\r\n			input.reset.style.visibility = (isDefault ? 'hidden' : null);
 		if (input.swatch)
 			input.swatch.value = value;
 	}
