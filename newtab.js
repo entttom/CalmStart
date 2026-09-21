@@ -1670,6 +1670,9 @@ if (chrome.sessions)
 		pageResults.hidden = true;
 		pageResults.innerHTML = '';
 		main.hidden = false;
+		var filtered = main.querySelectorAll('.calm-search-hidden');
+		for (var i = 0; i < filtered.length; i++)
+			filtered[i].classList.remove('calm-search-hidden');
 	}
 
 	function hideDropdown() {
@@ -1790,59 +1793,46 @@ if (chrome.sessions)
 		results.hidden = results.children.length === 0;
 	}
 
+	// Filter the already rendered CalmStart columns in place. This deliberately
+	// preserves column widths, folder positions and the normal start-page design.
 	function renderPage(nodes) {
 		hideDropdown();
 		matches = nodes;
-		main.hidden = true;
+		pageResults.hidden = true;
 		pageResults.innerHTML = '';
-		pageResults.hidden = false;
-		if (!nodes.length) {
-			var empty = document.createElement('div');
-			empty.className = 'search-page-empty';
-			empty.textContent = 'No matching bookmarks';
-			pageResults.appendChild(empty);
-			return;
+		main.hidden = false;
+
+		var allowed = Object.create(null);
+		for (var i = 0; i < nodes.length; i++) {
+			if (nodes[i].url)
+				allowed[nodes[i].url] = true;
 		}
 
-		var groups = Object.create(null), parentIds = [];
-		nodes.slice(0, 60).forEach(function(node) {
-			var id = node.parentId || 'root';
-			if (!groups[id]) { groups[id] = []; parentIds.push(id); }
-			groups[id].push(node);
-		});
-		var pending = parentIds.length;
-		var titles = Object.create(null);
-		function finish() {
-			if (--pending > 0) return;
-			parentIds.forEach(function(id) {
-				var section = document.createElement('section');
-				section.className = 'search-page-group';
-				var heading = document.createElement('div');
-				heading.className = 'search-page-folder';
-				heading.textContent = titles[id] || 'Bookmarks';
-				section.appendChild(heading);
-				var list = document.createElement('ul');
-				groups[id].forEach(function(node) {
-					var li = document.createElement('li');
-					var a = document.createElement('a');
-					a.href = node.url;
-					a.textContent = node.title || node.url;
-					a.insertBefore(getIcon(node), a.firstChild);
-					a.onclick = function(e) { e.preventDefault(); openLink(node, getConfig('newtab')); };
-					li.appendChild(a);
-					list.appendChild(li);
-				});
-				section.appendChild(list);
-				pageResults.appendChild(section);
-			});
+		var columnsOnPage = main.getElementsByClassName('column');
+		for (var c = 0; c < columnsOnPage.length; c++) {
+			var links = columnsOnPage[c].getElementsByTagName('a');
+			for (var l = 0; l < links.length; l++) {
+				var link = links[l];
+				var li = link.parentNode && link.parentNode.tagName === 'LI' ? link.parentNode : null;
+				if (!li) continue;
+				var href = link.getAttribute('href');
+				if (href && href !== '#' && !link.classList.contains('folder')) {
+					li.classList.toggle('calm-search-hidden', !allowed[link.href] && !allowed[href]);
+				}
+			}
 		}
-		parentIds.forEach(function(id) {
-			if (id === 'root') { titles[id] = 'Bookmarks'; finish(); return; }
-			chrome.bookmarks.get(id, function(found) {
-				titles[id] = found && found[0] ? found[0].title : 'Bookmarks';
-				finish();
-			});
-		});
+
+		// Keep folder/table structure visible, but hide a folder row only when it
+		// has a rendered child list and none of those children contains a match.
+		var folders = main.querySelectorAll('a.folder');
+		for (var f = folders.length - 1; f >= 0; f--) {
+			var folderLi = folders[f].parentNode;
+			if (!folderLi || folderLi.tagName !== 'LI') continue;
+			var childWrap = folders[f].nextSibling;
+			if (!childWrap) continue;
+			var visibleLink = childWrap.querySelector('li:not(.calm-search-hidden) a[href]');
+			folderLi.classList.toggle('calm-search-hidden', !visibleLink);
+		}
 	}
 
 	function visibleBookmarkRootIds() {
