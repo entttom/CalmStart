@@ -1844,11 +1844,57 @@ if (chrome.sessions)
 		});
 	}
 
+	function visibleBookmarkRootIds() {
+		var ids = [];
+		if (!columns) return ids;
+		for (var x = 0; x < columns.length; x++) {
+			for (var y = 0; y < columns[x].length; y++) {
+				var id = columns[x][y];
+				if (special.indexOf(id) === -1 && ids.indexOf(id) === -1)
+					ids.push(id);
+			}
+		}
+		return ids;
+	}
+
+	function collectBookmarkLinks(node, output, seen) {
+		if (!node) return;
+		if (node.url) {
+			if (!seen[node.id]) {
+				seen[node.id] = true;
+				output.push(node);
+			}
+			return;
+		}
+		var children = node.children || [];
+		for (var i = 0; i < children.length; i++)
+			collectBookmarkLinks(children[i], output, seen);
+	}
+
+	// Search only the bookmark folders that are actually part of the
+	// current CalmStart layout. Hidden/unplaced bookmark trees are excluded.
+	function searchStartPageBookmarks(query, callback) {
+		var ids = visibleBookmarkRootIds();
+		if (!ids.length) { callback([]); return; }
+		var pending = ids.length, all = [], seen = Object.create(null);
+		ids.forEach(function(id) {
+			chrome.bookmarks.getSubTree(id, function(found) {
+				if (found && found[0]) collectBookmarkLinks(found[0], all, seen);
+				if (--pending === 0) {
+					var q = normalize(query);
+					callback(all.filter(function(node) {
+						return normalize(node.title).indexOf(q) !== -1 || normalize(node.url).indexOf(q) !== -1;
+					}));
+				}
+			});
+		});
+	}
+
 	function runSearch() {
 		var query = input.value.trim();
 		var serial = ++searchSerial;
 		if (!query) { clearSearchResults(); return; }
-		chrome.bookmarks.search(query, function(found) {
+		searchStartPageBookmarks(query, function(found) {
 			if (serial !== searchSerial || input.value.trim() !== query) return;
 			var nodes = sortedMatches(found, query);
 			if (pageMode()) renderPage(nodes);
