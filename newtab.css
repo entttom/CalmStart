@@ -668,3 +668,203 @@ textarea {
 		gap: 12px;
 	}
 }
+
+
+/* CalmStart UI 2.1 — precise settings alignment */
+#options {
+	--cs-control-width: 190px;
+}
+
+/* Keep the close control clear of the outer border and content. */
+#options_close_button {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	box-sizing: border-box;
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	line-height: 1;
+	padding: 0 0 3px;
+	background: rgba(255,255,255,.88);
+	border: 1px solid transparent;
+	border-radius: 10px;
+	font-size: 24px;
+	font-weight: 300;
+	z-index: 20;
+}
+#options_close_button:hover,
+#options_close_button:focus-visible {
+	background: #fff;
+	border-color: var(--cs-border);
+	outline: none;
+}
+
+/* Give every setting row the same two-column grid. */
+#options fieldset > label:not(.diagnostic-log-label) {
+	display: grid;
+	grid-template-columns: minmax(180px, 1fr) var(--cs-control-width);
+	align-items: center;
+	column-gap: 28px;
+	min-height: 38px;
+	box-sizing: border-box;
+}
+#options fieldset > label:not(.diagnostic-log-label) > span {
+	min-width: 0;
+}
+
+/* All conventional controls share one right-hand edge and width. */
+#options label > input[type="text"],
+#options label > input[type="url"],
+#options label > input[type="number"],
+#options label > input[type="file"],
+#options label > select,
+#options label > .revert {
+	justify-self: stretch;
+	width: var(--cs-control-width);
+	max-width: 100%;
+	margin: 0;
+	box-sizing: border-box;
+}
+#options label > input[type="range"] {
+	justify-self: stretch;
+	width: var(--cs-control-width);
+	margin: 0;
+}
+#options label > input[type="color"] {
+	justify-self: end;
+	margin: 0;
+}
+#options label > input[type="checkbox"] {
+	justify-self: end;
+	flex: none;
+	margin: 0;
+}
+
+/* Nested content options stay indented on the label side only.
+   Their controls remain perfectly aligned with the rows above. */
+#options label.subopt {
+	margin: 0;
+	padding-left: 18px;
+}
+#options label.subopt > span {
+	color: var(--cs-muted);
+	font-size: .95em;
+}
+#options label.subopt > input {
+	width: var(--cs-control-width);
+}
+
+/* Browser file inputs need a little more breathing room. */
+#options input[type="file"] {
+	min-height: 34px;
+	font-size: .9em;
+}
+#options input[type="file"]::file-selector-button {
+	height: 30px;
+	margin: 1px 8px 1px 1px;
+	padding: 0 10px;
+	border: 0;
+	border-right: 1px solid var(--cs-border);
+	background: var(--cs-surface-muted);
+	color: var(--cs-text);
+	cursor: pointer;
+}
+
+/* Import/export and code editors intentionally span the card width. */
+#options fieldset > label:has(textarea) {
+	display: block;
+	min-height: 0;
+	padding: 6px 0 0;
+	border: 0;
+}
+#options fieldset > label > textarea {
+	display: block;
+	width: 100%;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+/* Diagnostics use the exact same control column as every other section. */
+#sync_diagnostics input,
+#sync_diagnostics input.diagnostic-wide {
+	justify-self: stretch;
+	width: var(--cs-control-width);
+	max-width: 100%;
+	margin: 0;
+}
+#sync_diagnostics .diagnostic-log-label {
+	padding-top: 12px;
+}
+#sync_diagnostics .diagnostic-log-label span {
+	margin-bottom: 8px;
+}
+
+/* Cleaner, consistent native control geometry. */
+#options input[type="text"],
+#options input[type="url"],
+#options input[type="number"],
+#options select {
+	height: 34px;
+}
+#options select {
+	padding-right: 30px;
+}
+#options input[type="range"] {
+	height: 34px;
+}
+#options input[type="color"] {
+	width: 42px;
+	height: 30px;
+}
+
+/* Leave a permanent header-safe area so the X never collides with a card. */
+#options .section {
+	padding-top: 58px;
+}
+#options .section:before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 180px;
+	right: 0;
+	height: 52px;
+	pointer-events: none;
+	background: linear-gradient(to bottom, rgba(255,255,255,.98), rgba(255,255,255,.90) 72%, rgba(255,255,255,0));
+	z-index: 3;
+}
+
+@media (max-width: 720px) {
+	#options {
+		--cs-control-width: 160px;
+	}
+	#options fieldset > label:not(.diagnostic-log-label) {
+		grid-template-columns: minmax(130px, 1fr) var(--cs-control-width);
+		column-gap: 16px;
+	}
+	#options .section:before {
+		left: 142px;
+	}
+}
+
+@media (max-width: 520px) {
+	#options fieldset > label:not(.diagnostic-log-label) {
+		grid-template-columns: 1fr;
+		row-gap: 7px;
+		padding: 9px 0;
+	}
+	#options label > input[type="text"],
+	#options label > input[type="url"],
+	#options label > input[type="number"],
+	#options label > input[type="file"],
+	#options label > select,
+	#options label > input[type="range"] {
+		justify-self: stretch;
+		width: 100%;
+	}
+	#options label > input[type="checkbox"],
+	#options label > input[type="color"] {
+		justify-self: start;
+	}
+}
