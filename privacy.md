@@ -12,7 +12,9 @@ Synchronized layout metadata can include bookmark folder titles and structural r
 
 ## Local data
 
-Device-specific state, including open/closed folder state, locally selected background-image file data, recovery backups and diagnostic metadata, remains in browser-local extension storage and is not intentionally written to the sync area.
+Device-specific state, including open/closed folder state, locally selected background-image file data, recovery backups, the preferred start-page profile and diagnostic metadata, remains in browser-local extension storage and is not intentionally written to the sync area.
+
+Favorites, recently opened links and folder icons/colors remain local unless the user explicitly enables the corresponding sync switch. If enabled, favorites and recent links transfer their URL and title; folder appearance transfers portable folder references with the selected icon and color. Profile definitions can also be synchronized, while the profile selected as preferred remains local to the browser installation.
 
 ## Developer-operated services
 
