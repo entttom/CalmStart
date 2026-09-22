@@ -38,6 +38,9 @@
 		</select></label>
 		<label><span>Lock columns</span><input id="options_lock" type="checkbox"/></label>
 		<label><span>Remember open folders</span><input id="options_remember_open" type="checkbox"/></label>
+		<label class="subopt"><span>Sync open folders between browsers</span><input id="options_sync_open_folders" type="checkbox"/></label>
+		<label><span>Custom folder icons and colors</span><input id="options_enable_folder_appearance" type="checkbox"/></label>
+		<label class="subopt"><span>Sync folder appearance between browsers</span><input id="options_sync_folder_appearance" type="checkbox"/></label>
 		<label><span>Auto-close folders</span><input id="options_auto_close" type="checkbox"/></label>
 		<label><span>Show top-level folders</span><input id="options_show_root" type="checkbox"/></label>
 		<label><span>Hide options button</span><input id="options_hide_options" type="checkbox"/></label>
@@ -46,6 +49,12 @@
 		<legend>Content</legend>
 		<label><span>Apps</span><input id="options_show_apps" type="checkbox"/></label>
 		<div id="options_show_bookmarks"></div>
+		<label><span>Favorites</span><input id="options_show_favorites" type="checkbox"/></label>
+		<label class="subopt"><span>Number of items</span><input id="options_number_favorites" type="number" min="1" max="50"/></label>
+		<label class="subopt"><span>Sync favorites between browsers</span><input id="options_sync_favorites" type="checkbox"/></label>
+		<label><span>Recently opened</span><input id="options_show_opened" type="checkbox"/></label>
+		<label class="subopt"><span>Number of items</span><input id="options_number_opened" type="number" min="1" max="100"/></label>
+		<label class="subopt"><span>Sync recently opened links between browsers</span><input id="options_sync_recent_links" type="checkbox"/></label>
 		<label><span>Most visited</span><input id="options_show_top" type="checkbox"/></label>
 		<label class="subopt"><span>Number of items</span><input id="options_number_top" type="number" min="1" max="10"/></label>
 		<label><span>Recent bookmarks</span><input id="options_show_recent" type="checkbox"/></label>
@@ -53,6 +62,27 @@
 		<label><span>Recently closed</span><input id="options_show_closed" type="checkbox"/></label>
 		<label class="subopt"><span>Number of items</span><input id="options_number_closed" type="number" min="1" max="25"/></label>
 		<label><span>Other devices</span><input id="options_show_devices" type="checkbox"/></label>
+		<p class="settings-help">Right-click any link on the start page to add or remove it from Favorites.</p>
+	</fieldset>
+	<fieldset>
+		<legend>Start-page profiles</legend>
+		<label><span>Enable profiles</span><input id="options_enable_profiles" type="checkbox"/></label>
+		<label class="subopt"><span>Sync profiles between browsers</span><input id="options_sync_profiles" type="checkbox"/></label>
+		<div id="profile_controls" hidden>
+			<label><span>Preferred profile on this computer</span><select id="profiles_select"></select></label>
+			<label><span>Profile name</span><input id="profiles_new_name" type="text" maxlength="60"/></label>
+			<div class="profile-actions">
+				<button id="profiles_create" type="button">Save current layout as new profile</button>
+				<button id="profiles_rename" type="button">Rename</button>
+				<button id="profiles_delete" type="button">Delete</button>
+			</div>
+		</div>
+	</fieldset>
+	<fieldset id="sync_overview">
+		<legend>Synchronization</legend>
+		<label><span>Status</span><input id="sync_overview_status" type="text" value="Initializing..." readonly/></label>
+		<label><span>Last activity</span><input id="sync_overview_last" type="text" value="Never" readonly/></label>
+		<p class="settings-help">Optional lists are synchronized only when their individual switch is on. The preferred profile stays on this computer.</p>
 	</fieldset>
 	</div><div class="section">
 	<fieldset>
@@ -154,6 +184,8 @@
 	</fieldset>
 	<fieldset>
 		<legend>Behavior</legend>
+		<label><span>Focus search on new tab</span><input id="options_search_autofocus" type="checkbox"/></label>
+		<p class="settings-help">Places the cursor in the search field when a new CalmStart tab opens, so you can start typing immediately.</p>
 		<p class="settings-help"><strong>Dropdown</strong> shows matches from the selected bookmark source beneath the search field. <strong>Filter page</strong> filters only the bookmarks already visible in the current CalmStart layout and preserves its columns and folder positions. Clearing the search restores the normal layout.</p>
 	</fieldset>
 	</div><div class="section">
