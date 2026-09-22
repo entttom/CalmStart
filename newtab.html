@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <title>CalmStart</title>
 <link rel="stylesheet" href="newtab.css">
+<link rel="stylesheet" href="settings.css">
 <link rel="icon" href="icons/icon_16.png">
 </head>
 <body>
@@ -25,10 +26,12 @@
 		<li><a class="current" tabindex="0">Settings</a></li>
 		<li><a tabindex="0">Appearance</a></li>
 		<li><a tabindex="0">Search</a></li>
+		<li><a tabindex="0">Synchronization</a></li>
 		<li><a tabindex="0">Import/Export</a></li>
 		<li><a tabindex="0">Advanced</a></li>
 	</ul>
 	<div class="section current">
+	<header class="settings-heading"><h1>Settings</h1></header>
 	<fieldset>
 		<legend>Settings</legend>
 		<label><span>Open links in</span><select id="options_newtab">
@@ -38,9 +41,7 @@
 		</select></label>
 		<label><span>Lock columns</span><input id="options_lock" type="checkbox"/></label>
 		<label><span>Remember open folders</span><input id="options_remember_open" type="checkbox"/></label>
-		<label class="subopt"><span>Sync open folders between browsers</span><input id="options_sync_open_folders" type="checkbox"/></label>
 		<label><span>Custom folder icons and colors</span><input id="options_enable_folder_appearance" type="checkbox"/></label>
-		<label class="subopt"><span>Sync folder appearance between browsers</span><input id="options_sync_folder_appearance" type="checkbox"/></label>
 		<label><span>Auto-close folders</span><input id="options_auto_close" type="checkbox"/></label>
 		<label><span>Show top-level folders</span><input id="options_show_root" type="checkbox"/></label>
 		<label><span>Hide options button</span><input id="options_hide_options" type="checkbox"/></label>
@@ -51,10 +52,8 @@
 		<div id="options_show_bookmarks"></div>
 		<label><span>Favorites</span><input id="options_show_favorites" type="checkbox"/></label>
 		<label class="subopt"><span>Number of items</span><input id="options_number_favorites" type="number" min="1" max="50"/></label>
-		<label class="subopt"><span>Sync favorites between browsers</span><input id="options_sync_favorites" type="checkbox"/></label>
 		<label><span>Recently opened</span><input id="options_show_opened" type="checkbox"/></label>
 		<label class="subopt"><span>Number of items</span><input id="options_number_opened" type="number" min="1" max="100"/></label>
-		<label class="subopt"><span>Sync recently opened links between browsers</span><input id="options_sync_recent_links" type="checkbox"/></label>
 		<label><span>Most visited</span><input id="options_show_top" type="checkbox"/></label>
 		<label class="subopt"><span>Number of items</span><input id="options_number_top" type="number" min="1" max="10"/></label>
 		<label><span>Recent bookmarks</span><input id="options_show_recent" type="checkbox"/></label>
@@ -67,7 +66,6 @@
 	<fieldset>
 		<legend>Start-page profiles</legend>
 		<label><span>Enable profiles</span><input id="options_enable_profiles" type="checkbox"/></label>
-		<label class="subopt"><span>Sync profiles between browsers</span><input id="options_sync_profiles" type="checkbox"/></label>
 		<div id="profile_controls" hidden>
 			<label><span>Preferred profile on this computer</span><select id="profiles_select"></select></label>
 			<label><span>Profile name</span><input id="profiles_new_name" type="text" maxlength="60"/></label>
@@ -78,13 +76,9 @@
 			</div>
 		</div>
 	</fieldset>
-	<fieldset id="sync_overview">
-		<legend>Synchronization</legend>
-		<label><span>Status</span><input id="sync_overview_status" type="text" value="Initializing..." readonly/></label>
-		<label><span>Last activity</span><input id="sync_overview_last" type="text" value="Never" readonly/></label>
-		<p class="settings-help">Optional lists are synchronized only when their individual switch is on. The preferred profile stays on this computer.</p>
-	</fieldset>
+
 	</div><div class="section">
+	<header class="settings-heading"><h1>Appearance</h1></header>
 	<fieldset>
 		<legend>Font</legend>
 		<label><span>Font</span><input id="options_font" type="text"/></label>
@@ -156,6 +150,7 @@
 		</select></label>
 	</fieldset>
 	</div><div class="section" id="search_settings_section">
+	<header class="settings-heading"><h1>Search</h1></header>
 	<fieldset>
 		<legend>Search</legend>
 		<label><span>Search scope</span><select id="options_search_scope">
@@ -188,24 +183,22 @@
 		<p class="settings-help">Places the cursor in the search field when a new CalmStart tab opens, so you can start typing immediately.</p>
 		<p class="settings-help"><strong>Dropdown</strong> shows matches from the selected bookmark source beneath the search field. <strong>Filter page</strong> filters only the bookmarks already visible in the current CalmStart layout and preserves its columns and folder positions. Clearing the search restores the normal layout.</p>
 	</fieldset>
-	</div><div class="section">
-	<fieldset>
-		<legend>Export Settings</legend>
-		<label><textarea id="options_export" readonly></textarea></label>
+	</div><div class="section" id="sync_settings_section">
+	<header class="settings-heading"><h1>Synchronization</h1></header>
+	<fieldset id="sync_overview">
+		<legend>Synchronization</legend>
+		<label><span>Status</span><input id="sync_overview_status" type="text" value="Initializing..." readonly/></label>
+		<label><span>Last activity</span><input id="sync_overview_last" type="text" value="Never" readonly/></label>
+		<p class="settings-help">Optional lists are synchronized only when their individual switch is on. The preferred profile stays on this computer.</p>
 	</fieldset>
-	<fieldset>
-		<legend>Import Settings</legend>
-		<label><textarea id="options_import"></textarea></label>
+	<fieldset><legend>Content</legend>
+		<label><span>Sync open folders between browsers</span><input id="options_sync_open_folders" type="checkbox"/></label>
+		<label><span>Sync folder appearance between browsers</span><input id="options_sync_folder_appearance" type="checkbox"/></label>
+		<label><span>Sync favorites between browsers</span><input id="options_sync_favorites" type="checkbox"/></label>
+		<label><span>Sync recently opened links between browsers</span><input id="options_sync_recent_links" type="checkbox"/></label>
+		<label><span>Sync profiles between browsers</span><input id="options_sync_profiles" type="checkbox"/></label>
 	</fieldset>
-	</div><div class="section">
-	<fieldset>
-		<legend>Generated CSS</legend>
-		<label><textarea id="all_css" readonly></textarea></label>
-	</fieldset>
-	<fieldset>
-		<legend>Custom CSS</legend>
-		<label><textarea id="options_css"></textarea></label>
-	</fieldset>
+	<details class="sync-details"><summary>Advanced</summary>
 	<fieldset id="sync_diagnostics">
 		<legend>Sync diagnostics</legend>
 		<label><span>Version</span><input id="dev_version" type="text" value="Pending" readonly/></label>
@@ -234,6 +227,28 @@
 		</div>
 		<label class="diagnostic-log-label"><span>Recent events (current tab)</span><textarea id="dev_event_log" readonly></textarea></label>
 	</fieldset>
+	</details>
+	</div><div class="section">
+	<header class="settings-heading"><h1>Import/Export</h1></header>
+	<fieldset>
+		<legend>Export Settings</legend>
+		<label><textarea id="options_export" readonly></textarea></label>
+	</fieldset>
+	<fieldset>
+		<legend>Import Settings</legend>
+		<label><textarea id="options_import"></textarea></label>
+	</fieldset>
+	</div><div class="section">
+	<header class="settings-heading"><h1>Advanced</h1></header>
+	<fieldset>
+		<legend>Generated CSS</legend>
+		<label><textarea id="all_css" readonly></textarea></label>
+	</fieldset>
+	<fieldset>
+		<legend>Custom CSS</legend>
+		<label><textarea id="options_css"></textarea></label>
+	</fieldset>
+
 	</div>
 </div>
 <script src="i18n.js"></script>
