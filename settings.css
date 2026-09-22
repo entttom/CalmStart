@@ -1,0 +1,115 @@
+/* Settings surface: scoped so custom start-page styles stay independent. */
+#options {
+  inset: 32px;
+  margin: auto;
+  width: min(1040px, calc(100vw - 64px));
+  height: min(840px, calc(100vh - 64px));
+  background: #f8fafb;
+  border: 1px solid #dfe6e9;
+  border-radius: 22px;
+  box-shadow: 0 24px 90px #10252d30;
+  --cs-control-width: 220px;
+}
+#options_nav {
+  width: 208px;
+  padding: 30px 14px;
+  background: #eef3f3;
+  border-right: 1px solid #dfe6e9;
+}
+#options_nav a {
+  padding: 13px 16px;
+  margin: 4px 0;
+  line-height: 1.4;
+  color: #52656b;
+  border-radius: 10px;
+}
+#options_nav a.current {
+  color: #185c61;
+  background: #fff;
+  box-shadow: 0 2px 8px #163e4610;
+}
+#options .section {
+  margin: 0 0 0 208px;
+  padding: 32px 34px 40px;
+  scroll-padding-top: 24px;
+}
+#options .section:before { display: none; }
+#options .settings-heading { margin: 0 44px 26px 0; }
+#options .settings-heading h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 650;
+  line-height: 1.4;
+  letter-spacing: -.6px;
+  color: #203d43;
+}
+#options_close_button { top: 25px; right: 25px; background: #eaf0f1; }
+#options fieldset {
+  min-width: 0;
+  margin: 0 0 22px;
+  padding: 14px 20px 12px;
+  border: 1px solid #e0e7e9;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 4px #163e4603;
+}
+#options legend { padding: 0 7px; font-size: 13px; color: #52656b; font-weight: 650; }
+#options fieldset label:not(.diagnostic-log-label) {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 220px) 18px;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 0;
+  margin: 0;
+  border-bottom: 1px solid #f0f3f4;
+}
+#options label > span { grid-column: 1; font-size: 13px; line-height: 1.5 !important; color: #354f56; }
+#options label > input, #options label > select { grid-column: 2; width: 100%; min-width: 0; margin: 0; }
+#options label > .revert { grid-column: 3; margin: 0; width: 16px; opacity: .4; }
+#options label > input[type=checkbox] { width: 36px; height: 20px; justify-self: end; }
+#options label > input[type=checkbox]:after { width: 16px; height: 16px; }
+#options label > input[type=checkbox]:checked { background: #277d83; }
+#options label > input[type=checkbox]:checked:after { transform: translateX(16px); }
+#options input[type=text], #options input[type=url], #options input[type=number], #options select {
+  height: 36px;
+  padding: 7px 10px;
+  border-color: #dbe3e6;
+  border-radius: 8px;
+  font-size: 13px;
+}
+#options select { padding-right: 28px; }
+#options label.subopt > span { color: #718087; font-size: 12px; padding-left: 14px; }
+#options label.subopt { min-height: 34px; padding-top: 4px; padding-bottom: 4px; }
+#options label > input[type=color] { grid-column: 3; width: 22px; height: 28px; }
+#options label:has(textarea) { display: block; }
+#options textarea { float: none; width: 100%; margin: 8px 0; border: 1px solid #dbe3e6; border-radius: 9px; padding: 12px; box-sizing: border-box; }
+#options .settings-help { margin: 12px 0 4px; color: #718087; font-size: 12px; line-height: 1.7; }
+#options button { border: 1px solid #d4e0e2; border-radius: 8px; padding: 9px 12px; background: #f5f9f9; color: #245e64; font: inherit; cursor: pointer; }
+#options button:hover { background: #e8f2f2; }
+#options button:disabled { opacity: .45; cursor: default; }
+#options :is(a, button, input, select, textarea, summary):focus-visible { outline: 2px solid #277d83; outline-offset: 3px; }
+#options #sync_overview { background: #eff7f5; border-color: #d4e7e2; }
+#options input[readonly] { background: transparent; border-color: transparent; color: #536970; text-overflow: ellipsis; }
+#options .sync-details summary { padding: 12px 4px; color: #62777e; cursor: pointer; font-size: 13px; }
+#options .sync-details[open] summary { margin-bottom: 12px; }
+#options #sync_diagnostics { min-width: 0; }
+#options #sync_diagnostics input { width: 100%; }
+#options [hidden] { display: none !important; }
+@media (max-width: 760px) {
+  #options { inset: 12px; width: calc(100vw - 24px); height: calc(100vh - 24px); border-radius: 16px; }
+  #options_nav { position: relative; width: 100%; height: auto; display: flex; overflow-x: auto; padding: 12px 52px 12px 12px; border-right: 0; border-bottom: 1px solid #dfe6e9; }
+  #options_nav li { flex: 0 0 auto; }
+  #options_nav a { padding: 9px 12px; white-space: nowrap; font-size: 12px; }
+  #options_close_button { top: 17px; right: 14px; }
+  #options .section { margin: 0; height: calc(100% - 75px); padding: 24px 18px 36px; }
+  #options .settings-heading h1 { font-size: 23px; }
+  #options fieldset { padding: 10px 14px; }
+  #options fieldset label:not(.diagnostic-log-label) { grid-template-columns: minmax(0, 1fr) minmax(100px, 42%) 16px; gap: 8px; }
+}
+@media (max-width: 420px) {
+  #options fieldset label:not(.diagnostic-log-label):not(:has(input[type=checkbox])) { grid-template-columns: minmax(0, 1fr) 18px; }
+  #options label:not(:has(input[type=checkbox])) > span { grid-column: 1 / -1; }
+  #options label:not(:has(input[type=checkbox])) > :is(input, select) { grid-column: 1; }
+  #options label:not(:has(input[type=checkbox])) > .revert { grid-column: 2; }
+}
