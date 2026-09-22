@@ -289,6 +289,10 @@ function renderColumns() {
 		renderColumn(i, column);
 	}
 
+	if (profilesEnabled()) {
+		ensureProfiles();
+		refreshProfileBar();
+	}
 	enableDragDrop();
 	setTimeout(applyPreferredProfileOnce, 0);
 }
