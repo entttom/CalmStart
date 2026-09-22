@@ -1125,9 +1125,33 @@ function deleteCurrentProfile() {
 	switchProfile(state.profiles[0].id);
 }
 
+function refreshProfileBar() {
+	var bar = document.getElementById('profile_bar');
+	if (!bar) return;
+	var enabled = profilesEnabled();
+	bar.hidden = !enabled;
+	bar.innerHTML = '';
+	if (!enabled) return;
+
+	var state = profileState();
+	var selected = activeProfileId();
+	state.profiles.forEach(function(profile) {
+		var button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'profile-page';
+		button.textContent = profile.name || i18nText('Untitled profile');
+		button.title = button.textContent;
+		button.setAttribute('aria-pressed', profile.id === selected ? 'true' : 'false');
+		if (profile.id === selected) button.classList.add('current');
+		button.onclick = function() { switchProfile(profile.id); };
+		bar.appendChild(button);
+	});
+}
+
 function refreshProfileControls() {
 	var controls = document.getElementById('profile_controls');
 	if (controls) controls.hidden = !profilesEnabled();
+	refreshProfileBar();
 	var select = document.getElementById('profiles_select');
 	if (!select) return;
 	var state = profileState();
