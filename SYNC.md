@@ -7,18 +7,35 @@ CalmStart synchronizes its layout and settings through the browser's built-in ex
 - Layout and column ordering
 - Appearance and behavior options
 - Visibility settings for bookmark roots and special folders
+- Start-page profile definitions, when profiles are enabled
 
 The implementation uses `chrome.storage.sync` for synchronized state.
 
 ## What stays local
 
-- Open/closed folder state
+- Open/closed folder state, unless **Sync open folders between browsers** is enabled
+- Favorites, recently opened links and folder appearance, unless their respective sync switches are enabled
+- The preferred start-page profile for this browser installation
 - Local background-image file data
 - Device identifier
 - Layout recovery backups
 - Sync diagnostics metadata
 
 Local-only data is stored in `chrome.storage.local`.
+
+## Optional open-folder sync
+
+When enabled in Settings, CalmStart synchronizes the folders that are currently open. The state is off by default and uses the same portable folder references as the layout, so it can be resolved in another browser profile without synchronizing the full bookmark database.
+
+## Optional personal lists and folder appearance
+
+Favorites, recently opened links and custom folder appearance are stored locally by default. Each feature has its own sync switch. Enabling one transfers only the selected feature through browser sync; it does not enable the others.
+
+Favorites and recently opened links contain the selected URL and title. Folder appearance uses portable folder references plus the selected icon and color, so it can be resolved against the bookmark tree on another browser profile.
+
+## Start-page profiles
+
+Profiles store a name and a complete portable column layout. When profiles are enabled, profile definitions are synchronized by default and can be turned off with **Sync profiles between browsers**. The preferred profile is deliberately local to each browser installation, allowing a work computer and a home computer to open different profiles while sharing the same profile set.
 
 ## Portable bookmark references
 
@@ -52,7 +69,7 @@ The Advanced tab contains a `Sync diagnostics` section for testing and support. 
 
 Controls are provided to:
 
-- **Sync now** - flush a pending layout write and refresh diagnostics.
-- **Reload remote state** - reread synchronized settings/layout and apply the current winner.
+- **Sync now** - flush pending layout and optional-feature writes, then refresh diagnostics.
+- **Reload remote state** - reread synchronized settings, layout and enabled optional features.
 - **Restore previous layout** - republish the latest local recovery backup.
 - **Copy diagnostics** - copy a support-friendly report including recent events.
