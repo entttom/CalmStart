@@ -113,3 +113,10 @@
   #options label:not(:has(input[type=checkbox])) > :is(input, select) { grid-column: 1; }
   #options label:not(:has(input[type=checkbox])) > .revert { grid-column: 2; }
 }
+
+/* Remove the legacy CalmStart label from the settings sidebar. */
+#options_nav::before,
+#options_nav::after {
+	display: none !important;
+	content: none !important;
+}
