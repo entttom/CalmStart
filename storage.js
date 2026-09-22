@@ -11,7 +11,17 @@ var HumbleSync = (function() {
 	S.OPTION_PREFIX = S.PREFIX + 'option.';
 	S.ROOT_VISIBILITY_PREFIX = S.PREFIX + 'rootVisibility.';
 	S.LAYOUT_PREFIX = S.PREFIX + 'layout.';
-	S.SPECIAL_IDS = ['apps', 'top', 'recent', 'closed', 'devices'];
+	S.OPEN_FOLDERS_KEY = S.PREFIX + 'openFolders';
+	S.FAVORITES_KEY = S.PREFIX + 'favorites';
+	S.RECENT_LINKS_KEY = S.PREFIX + 'recentLinks';
+	S.FOLDER_APPEARANCE_KEY = S.PREFIX + 'folderAppearance';
+	S.PROFILES_KEY = S.PREFIX + 'profiles';
+	S.FAVORITES_LOCAL_KEY = 'calmstart.favorites';
+	S.RECENT_LINKS_LOCAL_KEY = 'calmstart.recentLinks';
+	S.FOLDER_APPEARANCE_LOCAL_KEY = 'calmstart.folderAppearance';
+	S.PROFILES_LOCAL_KEY = 'calmstart.profiles';
+	S.ACTIVE_PROFILE_LOCAL_KEY = 'calmstart.activeProfile';
+	S.SPECIAL_IDS = ['favorites', 'opened', 'apps', 'top', 'recent', 'closed', 'devices'];
 	S.MAX_LAYOUT_BACKUPS = 10;
 	S.PORTABLE_EXPORT_KEY = '__hntp_portable_layout_v2';
 	S.LAYOUT_SAVE_DELAY = 700;
@@ -34,6 +44,8 @@ var HumbleSync = (function() {
 		deviceId: null,
 		migrationVersion: 0,
 		optionShadow: {},
+		openFoldersShadow: null,
+		stateShadows: {},
 		layoutBackups: [],
 		lastAppliedLayout: null,
 		lastSyncAt: null,
@@ -117,6 +129,27 @@ var HumbleSync = (function() {
 		return result;
 	};
 	S.isColumnKey = function(key) { return /^column\.\d+\.\d+$/.test(key); };
+	S.isOpenFolderKey = function(key) { return /^open\.(.+)$/.test(key); };
+	S.customStateDescriptor = function(localKey) {
+		var descriptors = {
+			'calmstart.favorites': { name: 'favorites', localKey: S.FAVORITES_LOCAL_KEY, syncKey: S.FAVORITES_KEY, optionKey: 'options.sync_favorites' },
+			'calmstart.recentLinks': { name: 'recentLinks', localKey: S.RECENT_LINKS_LOCAL_KEY, syncKey: S.RECENT_LINKS_KEY, optionKey: 'options.sync_recent_links' },
+			'calmstart.folderAppearance': { name: 'folderAppearance', localKey: S.FOLDER_APPEARANCE_LOCAL_KEY, syncKey: S.FOLDER_APPEARANCE_KEY, optionKey: 'options.sync_folder_appearance' },
+			'calmstart.profiles': { name: 'profiles', localKey: S.PROFILES_LOCAL_KEY, syncKey: S.PROFILES_KEY, optionKey: 'options.sync_profiles' }
+		};
+		return descriptors[localKey] || null;
+	};
+	S.customStateDescriptorForSyncKey = function(syncKey) {
+		var keys = [S.FAVORITES_LOCAL_KEY, S.RECENT_LINKS_LOCAL_KEY, S.FOLDER_APPEARANCE_LOCAL_KEY, S.PROFILES_LOCAL_KEY];
+		for (var i = 0; i < keys.length; i++) {
+			var descriptor = S.customStateDescriptor(keys[i]);
+			if (descriptor && descriptor.syncKey === syncKey) return descriptor;
+		}
+		return null;
+	};
+	S.isProfilesEnabled = function() {
+		return String(S.cache['options.enable_profiles'] || '') === '1';
+	};
 	S.isOptionKey = function(key) { return key.indexOf('options.') === 0; };
 	S.isLocalOnlyOption = function(key) { return key === 'options.background_image_file'; };
 	S.numericRootOptionId = function(key) {
@@ -224,7 +257,33 @@ var HumbleSync = (function() {
 		}
 		S.mirrorSet(key, value);
 		if (S.initializing) return;
-		if (S.isColumnKey(key)) { S.scheduleLayoutSave(); return; }
+		if (S.isColumnKey(key)) {
+			if (!S.isProfilesEnabled()) S.scheduleLayoutSave();
+			return;
+		}
+		var customState = S.customStateDescriptor(key);
+		if (customState) {
+			S.localValues[key] = value;
+			S.persistLocalSoon();
+			if (S.customStateSyncEnabled && S.customStateSyncEnabled(customState)) S.scheduleCustomStateSave(customState);
+			return;
+		}
+		if (S.isOpenFolderKey(key)) {
+			S.localValues[key] = value;
+			S.persistLocalSoon();
+			if (S.openFolderSyncEnabled && S.openFolderSyncEnabled()) S.scheduleOpenFoldersSave();
+			return;
+		}
+		if (key === 'options.sync_open_folders') {
+			S.writeSyncOption(key, value, false);
+			if (Number(value) && S.enableOpenFolderSync) S.enableOpenFolderSync();
+			return;
+		}
+		if (key.indexOf('options.sync_') === 0) {
+			S.writeSyncOption(key, value, false);
+			if (Number(value) && S.enableCustomStateSync) S.enableCustomStateSyncByOption(key);
+			return;
+		}
 		if (S.isSyncableOption(key)) { S.writeSyncOption(key, value, false); return; }
 		S.localValues[key] = value;
 		S.persistLocalSoon();
@@ -232,7 +291,23 @@ var HumbleSync = (function() {
 	S.removeItem = function(key) {
 		S.mirrorRemove(key);
 		if (S.initializing) return;
-		if (S.isColumnKey(key)) { S.scheduleLayoutSave(); return; }
+		if (S.isColumnKey(key)) {
+			if (!S.isProfilesEnabled()) S.scheduleLayoutSave();
+			return;
+		}
+		var customState = S.customStateDescriptor(key);
+		if (customState) {
+			delete S.localValues[key];
+			S.persistLocalSoon();
+			if (S.customStateSyncEnabled && S.customStateSyncEnabled(customState)) S.scheduleCustomStateSave(customState, true);
+			return;
+		}
+		if (S.isOpenFolderKey(key)) {
+			delete S.localValues[key];
+			S.persistLocalSoon();
+			if (S.openFolderSyncEnabled && S.openFolderSyncEnabled()) S.scheduleOpenFoldersSave();
+			return;
+		}
 		if (S.isSyncableOption(key)) { S.writeSyncOption(key, null, true); return; }
 		delete S.localValues[key];
 		S.persistLocalSoon();
@@ -301,12 +376,16 @@ var HumbleSync = (function() {
 	};
 	S.updateDevelopmentInfo = function() {
 		var info = S.debugInfo();
+		var overviewStatus = !info.syncEnabled ? (info.initError ? 'Unavailable' : 'Waiting for browser sync') :
+			((S.pendingSyncWrites > 0 || S.layoutDirty || S.layoutSaveTimer || (S.customStateSaveTimers && Object.keys(S.customStateSaveTimers).length)) ? 'Synchronizing…' : 'Up to date');
 		var fields = {
 			dev_storage_backend: info.backend,
 			dev_sync_status: info.syncEnabled ? 'Enabled' : (info.initError ? 'Fallback / unavailable' : 'Unavailable'),
 			dev_device_id: info.deviceId,
 			dev_layout_revision: String(info.layoutRevision),
 			dev_last_sync: S.formatTimestamp(info.lastSyncAt),
+			sync_overview_status: overviewStatus,
+			sync_overview_last: S.formatTimestamp(info.lastSyncAt),
 			dev_backup_status: String(info.backupCount),
 			dev_conflicts: String(info.conflictCount)
 		};
