@@ -6,6 +6,134 @@ var i18nText = function(key, substitutions) {
 	return key;
 };
 
+var FAVORITES_STORAGE_KEY = 'calmstart.favorites';
+var RECENT_LINKS_STORAGE_KEY = 'calmstart.recentLinks';
+var FOLDER_APPEARANCE_STORAGE_KEY = 'calmstart.folderAppearance';
+var PROFILES_STORAGE_KEY = 'calmstart.profiles';
+var ACTIVE_PROFILE_STORAGE_KEY = 'calmstart.activeProfile';
+
+function readJsonState(key, fallback) {
+	try {
+		var value = localStorage.getItem(key);
+		return value ? JSON.parse(value) : fallback;
+	} catch (error) {
+		return fallback;
+	}
+}
+
+function writeJsonState(key, value) {
+	localStorage.setItem(key, JSON.stringify(value));
+}
+
+function favoriteItems() {
+	var items = readJsonState(FAVORITES_STORAGE_KEY, []);
+	return Array.isArray(items) ? items.filter(function(item) { return item && item.url; }) : [];
+}
+
+function isFavorite(node) {
+	return !!node && !!node.url && favoriteItems().some(function(item) { return item.url === node.url; });
+}
+
+function toggleFavorite(node) {
+	if (!node || !node.url) return;
+	var items = favoriteItems();
+	var index = items.findIndex(function(item) { return item.url === node.url; });
+	if (index >= 0) items.splice(index, 1);
+	else items.unshift({ url: node.url, title: node.title || node.url });
+	writeJsonState(FAVORITES_STORAGE_KEY, items.slice(0, 50));
+	loadColumns();
+}
+
+function recentLinkItems() {
+	var items = readJsonState(RECENT_LINKS_STORAGE_KEY, []);
+	return Array.isArray(items) ? items.filter(function(item) { return item && item.url; }) : [];
+}
+
+function recordRecentlyOpened(node) {
+	if (!getConfig('show_opened') && !getConfig('sync_recent_links')) return;
+	if (!node || !node.url || /^chrome:\/\/newtab\/?$/.test(node.url)) return;
+	var now = Date.now();
+	var items = recentLinkItems().filter(function(item) { return item.url !== node.url; });
+	items.unshift({ url: node.url, title: node.title || node.url, openedAt: now });
+	writeJsonState(RECENT_LINKS_STORAGE_KEY, items.slice(0, 100));
+}
+
+function folderAppearance() {
+	var value = readJsonState(FOLDER_APPEARANCE_STORAGE_KEY, {});
+	return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function applyFolderAppearance(node, anchor, icon) {
+	if (!node || !node.children || !getConfig('enable_folder_appearance')) return;
+	var appearance = folderAppearance()[node.id];
+	if (!appearance) return;
+	if (/^#[0-9a-f]{6}$/i.test(appearance.color || '')) {
+		anchor.classList.add('custom-folder-color');
+		anchor.style.setProperty('--cs-folder-color', appearance.color);
+	}
+	if (appearance.icon) {
+		icon.classList.add('custom-folder-icon');
+		icon.textContent = String(appearance.icon).slice(0, 12);
+		icon.removeAttribute('src');
+		icon.style.backgroundImage = 'none';
+	}
+}
+
+function setFolderIcon(node) {
+	var appearances = folderAppearance();
+	var current = appearances[node.id] || {};
+	var icon = window.prompt(i18nText('Folder icon (emoji or short text)'), current.icon || '');
+	if (icon === null) return;
+	appearances[node.id] = { icon: icon.trim().slice(0, 12), color: current.color || '' };
+	writeJsonState(FOLDER_APPEARANCE_STORAGE_KEY, appearances);
+	loadColumns();
+}
+
+function setFolderColor(node, anchor) {
+	var picker = document.createElement('input');
+	picker.type = 'color';
+	picker.value = (folderAppearance()[node.id] || {}).color || '#277d83';
+	picker.style.position = 'fixed';
+	picker.style.left = '-1000px';
+	document.body.appendChild(picker);
+	picker.onchange = function() {
+		var appearances = folderAppearance();
+		var current = appearances[node.id] || {};
+		appearances[node.id] = { icon: current.icon || '', color: picker.value };
+		writeJsonState(FOLDER_APPEARANCE_STORAGE_KEY, appearances);
+		document.body.removeChild(picker);
+		loadColumns();
+	};
+	picker.onblur = function() {
+		setTimeout(function() { if (picker.parentNode) picker.parentNode.removeChild(picker); }, 50);
+	};
+	picker.click();
+}
+
+function clearFolderAppearance(node) {
+	var appearances = folderAppearance();
+	delete appearances[node.id];
+	writeJsonState(FOLDER_APPEARANCE_STORAGE_KEY, appearances);
+	loadColumns();
+}
+
+function addLinkHandlers(node, anchor) {
+	if (!node || !node.url) return;
+	anchor.addEventListener('click', function(event) {
+		if (!event.defaultPrevented) recordRecentlyOpened(node);
+	});
+	anchor.addEventListener('auxclick', function(event) {
+		if (event.button === 1 && !event.defaultPrevented) recordRecentlyOpened(node);
+	});
+	anchor.oncontextmenu = function(event) {
+		renderMenu([{
+			label: i18nText(isFavorite(node) ? 'Remove from favorites' : 'Add to favorites'),
+			action: function() { toggleFavorite(node); }
+		}], event.pageX, event.pageY);
+		return false;
+	};
+}
+
 // render a single bookmark node
 function render(node, target) {
 	if (node.description == 'separator') return;
@@ -26,7 +154,9 @@ function render(node, target) {
 	if (node.tooltip) a.title = node.tooltip;
 	setClass(a, node);
 
-	a.insertBefore(getIcon(node), a.firstChild);
+	var icon = getIcon(node);
+	a.insertBefore(icon, a.firstChild);
+	applyFolderAppearance(node, a, icon);
 
 	if (node.action) {
 		a.onclick = function(event) {
@@ -60,6 +190,9 @@ function render(node, target) {
 		}
 	} else if (!node.children)
 		a.style.pointerEvents = 'none';
+
+	if (url)
+		addLinkHandlers(node, a);
 
 	li.appendChild(a);
 
@@ -157,6 +290,7 @@ function renderColumns() {
 	}
 
 	enableDragDrop();
+	setTimeout(applyPreferredProfileOnce, 0);
 }
 
 // enables click and context menu for given folder
@@ -288,6 +422,23 @@ function addColumnHandlers(index, ul) {
 // gets context menu items for given node
 function getMenuItems(node) {
 	var items = [];
+	if (Number(node.id) && getConfig('enable_folder_appearance')) {
+		items.push({
+			label: i18nText('Set folder icon…'),
+			action: function() { setFolderIcon(node); }
+		});
+		items.push({
+			label: i18nText('Choose folder color'),
+			action: function() { setFolderColor(node); }
+		});
+		if (folderAppearance()[node.id]) {
+			items.push({
+				label: i18nText('Reset folder appearance'),
+				action: function() { clearFolderAppearance(node); }
+			});
+		}
+		items.push(null);
+	}
 		items.push({
 			label: i18nText('Open all links in folder'),
 			action: function() {
@@ -586,6 +737,14 @@ function updateTooltips() {
 // gets function that returns children of node
 function getChildrenFunction(node) {
 	switch(node.id) {
+		case 'favorites':
+			return function(callback) {
+				callback(favoriteItems().slice(0, getConfig('number_favorites')));
+			};
+		case 'opened':
+			return function(callback) {
+				callback(recentLinkItems().slice(0, getConfig('number_opened')));
+			};
 		case 'top':
 			return function(callback) {
 				if (chrome.topSites)
@@ -636,6 +795,12 @@ function getChildrenFunction(node) {
 // gets the subtree for given id
 function getSubTree(id, callback) {
 	switch(id) {
+		case 'favorites':
+			callback([{ title: i18nText('Favorites'), id: 'favorites', children: true }]);
+			break;
+		case 'opened':
+			callback([{ title: i18nText('Recently opened'), id: 'opened', children: true }]);
+			break;
 		case 'top':
 			callback([{ title: i18nText('Most visited'), id: 'top', children: true}]);
 			break;
@@ -676,6 +841,8 @@ function setClass(target, node, isopen) {
 		target.classList.remove('open');
 
 	switch(node.id) {
+		case 'favorites':
+		case 'opened':
 		case 'top':
 		case 'apps':
 		case 'recent':
@@ -814,6 +981,7 @@ function openLinks(node) {
 function openLink(node, newtab) {
 	var url = node.url;
 	if (url) {
+		recordRecentlyOpened(node);
 		chrome.tabs.getCurrent(function(tab) {
 			if (newtab)
 				chrome.tabs.create({url: url, active: (newtab == 1), openerTabId: tab.id});
@@ -826,7 +994,165 @@ function openLink(node, newtab) {
 var columns; // columns[x][y] = id
 var root; // root[] = id
 var coords; // coords[id] = {x:x, y:y}
-var special = ['apps', 'top', 'recent', 'closed', 'devices'];
+var special = ['favorites', 'opened', 'apps', 'top', 'recent', 'closed', 'devices'];
+var profileCaptureTimer = null;
+var profileSwitchInProgress = false;
+var profileStartupApplied = false;
+
+function profilesEnabled() {
+	return !!getConfig('enable_profiles');
+}
+
+function profileState() {
+	var state = readJsonState(PROFILES_STORAGE_KEY, { v: 1, profiles: [] });
+	if (!state || !Array.isArray(state.profiles)) state = { v: 1, profiles: [] };
+	return state;
+}
+
+function currentPortableColumns() {
+	if (window.HumbleSync && HumbleSync.currentPortableLayout)
+		return HumbleSync.currentPortableLayout().columns;
+	return [];
+}
+
+function activeProfileId() {
+	return localStorage.getItem(ACTIVE_PROFILE_STORAGE_KEY) || '';
+}
+
+function findProfile(state, id) {
+	return (state.profiles || []).filter(function(profile) { return profile.id === id; })[0] || null;
+}
+
+function newProfileId() {
+	return 'profile-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+function saveProfileState(state) {
+	state.v = 1;
+	writeJsonState(PROFILES_STORAGE_KEY, state);
+}
+
+function ensureProfiles() {
+	if (!profilesEnabled()) return false;
+	var state = profileState();
+	if (!state.profiles.length) {
+		state.profiles.push({ id: newProfileId(), name: i18nText('Default'), columns: currentPortableColumns(), updatedAt: Date.now() });
+		saveProfileState(state);
+	}
+	if (!findProfile(state, activeProfileId()))
+		localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, state.profiles[0].id);
+	refreshProfileControls();
+	return true;
+}
+
+function applyPreferredProfileOnce() {
+	if (profileStartupApplied || !profilesEnabled() || !ensureProfiles()) return;
+	var profile = findProfile(profileState(), activeProfileId());
+	if (!profile || !window.HumbleSync || !HumbleSync.setResolvedColumns) return;
+	profileStartupApplied = true;
+	var wanted = HumbleSync.resolvePortableLayout(profile.columns || []);
+	var wantedHash = HumbleSync.layoutHash(profile.columns || []);
+	var currentHash = HumbleSync.currentPortableLayout().hash;
+	if (currentHash === wantedHash) return;
+	profileSwitchInProgress = true;
+	HumbleSync.setResolvedColumns(wanted);
+	loadColumns();
+	setTimeout(function() { profileSwitchInProgress = false; }, 0);
+}
+
+function switchProfile(id) {
+	if (!profilesEnabled()) return;
+	var profile = findProfile(profileState(), id);
+	if (!profile || !window.HumbleSync || !HumbleSync.setResolvedColumns) return;
+	profileSwitchInProgress = true;
+	localStorage.setItem(ACTIVE_PROFILE_STORAGE_KEY, profile.id);
+	HumbleSync.setResolvedColumns(HumbleSync.resolvePortableLayout(profile.columns || []));
+	loadColumns();
+	setTimeout(function() { profileSwitchInProgress = false; }, 0);
+	refreshProfileControls();
+}
+
+function scheduleProfileCapture() {
+	if (!profilesEnabled() || profileSwitchInProgress) return;
+	if (profileCaptureTimer) clearTimeout(profileCaptureTimer);
+	profileCaptureTimer = setTimeout(function() {
+		profileCaptureTimer = null;
+		var state = profileState();
+		var profile = findProfile(state, activeProfileId());
+		if (!profile) return;
+		profile.columns = currentPortableColumns();
+		profile.updatedAt = Date.now();
+		saveProfileState(state);
+		refreshProfileControls();
+	}, 400);
+}
+
+function createProfile() {
+	if (!profilesEnabled()) return;
+	var field = document.getElementById('profiles_new_name');
+	var name = (field && field.value || '').trim() || i18nText('New profile');
+	var state = profileState();
+	var profile = { id: newProfileId(), name: name.slice(0, 60), columns: currentPortableColumns(), updatedAt: Date.now() };
+	state.profiles.push(profile);
+	saveProfileState(state);
+	if (field) field.value = '';
+	switchProfile(profile.id);
+}
+
+function renameCurrentProfile() {
+	var field = document.getElementById('profiles_new_name');
+	var name = (field && field.value || '').trim();
+	if (!name) return;
+	var state = profileState();
+	var profile = findProfile(state, activeProfileId());
+	if (!profile) return;
+	profile.name = name.slice(0, 60);
+	profile.updatedAt = Date.now();
+	saveProfileState(state);
+	if (field) field.value = '';
+	refreshProfileControls();
+}
+
+function deleteCurrentProfile() {
+	var state = profileState();
+	if (state.profiles.length <= 1) {
+		alert(i18nText('At least one profile is required.'));
+		return;
+	}
+	var current = activeProfileId();
+	state.profiles = state.profiles.filter(function(profile) { return profile.id !== current; });
+	saveProfileState(state);
+	switchProfile(state.profiles[0].id);
+}
+
+function refreshProfileControls() {
+	var controls = document.getElementById('profile_controls');
+	if (controls) controls.hidden = !profilesEnabled();
+	var select = document.getElementById('profiles_select');
+	if (!select) return;
+	var state = profileState();
+	var selected = activeProfileId();
+	select.innerHTML = '';
+	state.profiles.forEach(function(profile) {
+		var option = document.createElement('option');
+		option.value = profile.id;
+		option.textContent = profile.name || i18nText('Untitled profile');
+		option.selected = profile.id === selected;
+		select.appendChild(option);
+	});
+}
+
+function initProfileControls() {
+	var select = document.getElementById('profiles_select');
+	if (!select || select.dataset.bound) return;
+	select.dataset.bound = '1';
+	select.onchange = function() { switchProfile(select.value); };
+	document.getElementById('profiles_create').onclick = function() { createProfile(); return false; };
+	document.getElementById('profiles_rename').onclick = function() { renameCurrentProfile(); return false; };
+	document.getElementById('profiles_delete').onclick = function() { deleteCurrentProfile(); return false; };
+	ensureProfiles();
+	refreshProfileControls();
+}
 
 // ensure root folders are included
 function verifyColumns() {
@@ -921,6 +1247,7 @@ function saveColumns() {
 	}
 	// refresh
 	loadColumns();
+	scheduleProfileCapture();
 }
 
 // creates and saves a new column
@@ -1088,21 +1415,33 @@ var config = {
 	lock: 0,
 	show_top: 1,
 	show_apps: 1,
+	show_favorites: 0,
+	show_opened: 0,
 	show_recent: 1,
 	show_closed: 1,
 	show_devices: 1,
 	show_root: 0,
 	newtab: 0,
 	remember_open: 1,
+	sync_open_folders: 0,
+	sync_favorites: 0,
+	sync_recent_links: 0,
+	enable_folder_appearance: 0,
+	sync_folder_appearance: 0,
+	enable_profiles: 0,
+	sync_profiles: 0,
 	auto_close: 0,
 	auto_scale: 1,
 	css: '',
 	number_top: 10,
+	number_favorites: 12,
+	number_opened: 10,
 	number_closed: 10,
 	number_recent: 10,
 	search_scope: 'bookmarks_web',
 	search_bookmark_source: 'startpage',
 	search_display: 'dropdown',
+	search_autofocus: 0,
 	search_engine: 'google',
 	search_custom_pattern: 'https://www.google.com/search?q=%s'
 };
@@ -1208,8 +1547,12 @@ function setConfig(key, value) {
 		value = (theme.hasOwnProperty(key) ? theme[key] : config[key]);
 	}
 	// special case settings
-	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key.substring(0,6) == 'number')
+	if (key == 'lock' || key == 'newtab' || key == 'show_root' || key == 'enable_folder_appearance' || key == 'enable_profiles' || key.substring(0,6) == 'number')
 		loadColumns();
+	if (key == 'enable_profiles' && value) {
+		if (!getConfig('sync_profiles')) setConfig('sync_profiles', 1);
+		setTimeout(function() { ensureProfiles(); }, 0);
+	}
 	else if (key == 'theme') {
 		theme = themes[value];
 		for (var i in config) {
@@ -1229,6 +1572,7 @@ function setConfig(key, value) {
 		}
 	}
 	onChange(key, value);
+	if (key === 'enable_profiles' || key === 'sync_profiles') refreshProfileControls();
 	if (key.indexOf('search_') === 0)
 		window.dispatchEvent(new CustomEvent('calmstart-search-settings-changed'));
 	return value;
@@ -1544,6 +1888,7 @@ function initSettings() {
 		// show settings
 		for (var key in config)
 			initConfig(key);
+		initProfileControls();
 
 		loadSettings();
 
@@ -1588,6 +1933,8 @@ function showOptions(show) {
 			initSettings();
 		for (var key in config)
 			showConfig(key);
+		if (window.HumbleSync && HumbleSync.updateDevelopmentInfo)
+			HumbleSync.updateDevelopmentInfo();
 	}
 }
 
@@ -1596,6 +1943,17 @@ loadSettings();
 loadColumns();
 
 // keyboard shortcuts
+document.addEventListener('keydown', function(event) {
+	var target = event.target;
+	var editable = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
+	var focusSearch = (event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey) ||
+		((event.metaKey || event.ctrlKey) && event.key && event.key.toLowerCase() === 'k');
+	if (!focusSearch || editable) return;
+	var search = document.getElementById('calm_search');
+	if (!search) return;
+	event.preventDefault();
+	search.focus({ preventScroll: true });
+});
 document.addEventListener('keypress', function(event) {
 	if (event.keyCode == 13 && event.target && event.target.onclick && event.target.tagName == 'A') {
 		event.target.dispatchEvent(new MouseEvent('click'));
@@ -1942,4 +2300,6 @@ if (chrome.sessions)
 		if (input.value.trim()) runSearch(); else clearSearchResults();
 	});
 	updateSearchChrome();
+	if (getConfig('search_autofocus'))
+		requestAnimationFrame(function() { input.focus({preventScroll: true}); });
 })();
