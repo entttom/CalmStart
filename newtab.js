@@ -1773,24 +1773,7 @@ function initConfig(key) {
 			setConfig(key, input.type == 'checkbox' ? Number(input.checked) : input.value);
 	};
 
-	// Toggles are reset directly by switching them; no extra reset control.
-	if (input.type === 'checkbox' || input.type === 'radio') {
-		showConfig(key);
-		return;
-	}
-
-	var reset = document.createElement('a');
-	reset.className = 'revert';
-	reset.title = i18nText('Reset to default');
-	reset.tabIndex = 0;
-	reset.onclick = function() {
-		setConfig(key, null);
-		showConfig(key);
-		return false;
-	};
-
-	input.reset = reset;
-	input.parentNode.appendChild(reset);
+	// Values remain visible without per-setting reset controls.
 	showConfig(key);
 }
 
