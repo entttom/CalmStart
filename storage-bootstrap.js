@@ -6,6 +6,8 @@
 		var storedMeta = localData[S.LOCAL_META_KEY] || {};
 		S.meta = Object.assign(S.meta, storedMeta);
 		S.meta.optionShadow = S.meta.optionShadow || {};
+		S.meta.openFoldersShadow = S.meta.openFoldersShadow || null;
+		S.meta.stateShadows = S.meta.stateShadows || {};
 		S.meta.layoutBackups = S.meta.layoutBackups || [];
 		S.meta.deviceId = S.meta.deviceId || S.generateDeviceId();
 
@@ -79,6 +81,9 @@
 			if (!localKey || !envelope || envelope.deleted) return;
 			S.cache[localKey] = String(envelope.value);
 		});
+		if (S.cache['options.sync_open_folders'] && S.applyOpenFoldersEnvelope)
+			S.applyOpenFoldersEnvelope(syncData[S.OPEN_FOLDERS_KEY], false);
+		if (S.applyInitialCustomStates) S.applyInitialCustomStates(syncData);
 
 		var legacyColumns = S.columnsFromValues(legacySnapshot);
 		var legacyPortable = S.portableLayoutFromColumns(legacyColumns);
