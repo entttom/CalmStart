@@ -221,6 +221,7 @@
 			S.layoutSaveTimer = null;
 		}
 		if (S.layoutDirty) work = work.then(function() { return S.saveLayoutCandidate(); });
+		if (S.flushCustomStateSaves) work = work.then(function() { return S.flushCustomStateSaves(); });
 		return work.then(function() { return S.refreshDiagnosticSnapshot(); }).then(function() {
 			S.recordDiagnosticEvent('manual sync completed');
 			return true;
@@ -233,6 +234,12 @@
 		return S.storageGet(S.syncArea, null).then(function(syncData) {
 			var changed = false;
 			Object.keys(syncData || {}).forEach(function(syncKey) {
+				var customState = S.customStateDescriptorForSyncKey && S.customStateDescriptorForSyncKey(syncKey);
+				if (customState) {
+					var stateEnvelope = syncData[syncKey];
+					if (stateEnvelope && S.applyCustomStateEnvelope(customState, stateEnvelope, false)) changed = true;
+					return;
+				}
 				if (syncKey.indexOf(S.OPTION_PREFIX) === 0 || syncKey.indexOf(S.ROOT_VISIBILITY_PREFIX) === 0) {
 					var envelope = syncData[syncKey];
 					if (envelope && S.applyOptionEnvelope(syncKey, envelope, false)) changed = true;
@@ -252,7 +259,7 @@
 	S.syncStatus = function() {
 		if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'Offline';
 		if (!S.syncArea || !S.syncAvailable) return 'Error';
-		if (S.pendingSyncWrites > 0 || S.layoutDirty || S.layoutSaveTimer) return 'Pending';
+		if (S.pendingSyncWrites > 0 || S.layoutDirty || S.layoutSaveTimer || (S.customStateSaveTimers && Object.keys(S.customStateSaveTimers).length)) return 'Pending';
 		return 'OK';
 	};
 
@@ -325,7 +332,7 @@
 		originalUpdateDevelopmentInfo();
 		var d = S.ensureDiagnosticsMeta();
 		var current = S.currentPortableLayout ? S.currentPortableLayout() : { hash: 'Pending' };
-		var pending = S.pendingSyncWrites > 0 || S.layoutDirty || !!S.layoutSaveTimer;
+		var pending = S.pendingSyncWrites > 0 || S.layoutDirty || !!S.layoutSaveTimer || (S.customStateSaveTimers && Object.keys(S.customStateSaveTimers).length);
 		var manifest = chrome.runtime && chrome.runtime.getManifest ? chrome.runtime.getManifest() : {};
 		var fields = {
 			dev_version: manifest.version || 'Unknown',
