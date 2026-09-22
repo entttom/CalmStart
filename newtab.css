@@ -275,6 +275,15 @@ input[type="file"]::-webkit-file-upload-button {
 .open .icon {
 	background-image: -webkit-image-set(url("icons/folder_open.png") 1x, url("icons/folder_open@2x.png") 2x);
 }
+.custom-folder-icon {
+	background-image: none !important;
+	font-size: 16px;
+	line-height: 16px;
+	text-align: center;
+}
+#main a.folder.custom-folder-color {
+	color: var(--cs-folder-color);
+}
 .empty .icon {
 	display: none;
 }
@@ -336,6 +345,25 @@ input[type="file"]::-webkit-file-upload-button {
 	height: 10em;
 	margin: .4em 0 0;
 	font-size: .85em;
+}
+.profile-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 6px;
+	margin-top: 8px;
+}
+.profile-actions button {
+	font: inherit;
+	padding: 6px 9px;
+	border: 1px solid var(--cs-border);
+	border-radius: 7px;
+	background: #fff;
+	color: var(--cs-text);
+	cursor: pointer;
+}
+.profile-actions button:hover {
+	background: var(--cs-accent-soft);
 }
 
 
@@ -452,16 +480,6 @@ body {
 	box-sizing: border-box;
 	background: var(--cs-surface-muted);
 	border-right: 1px solid var(--cs-border);
-}
-#options_nav:before {
-	content: "CalmStart";
-	position: absolute;
-	top: 23px;
-	left: 20px;
-	font-size: 14px;
-	font-weight: 700;
-	letter-spacing: -.01em;
-	color: var(--cs-text);
 }
 #options_nav a {
 	margin: 2px 0;
