@@ -1704,7 +1704,9 @@ function onChange(key, value) {
 	var input = document.getElementById('options_' + key);
 	if (input) {
 		var isDefault = value == (theme.hasOwnProperty(key) ? theme[key] : config[key]);
-		// Some controls (for example checkboxes/radios) do not have a reset button.\r\n		if (input.reset)\r\n			input.reset.style.visibility = (isDefault ? 'hidden' : null);
+		// Some controls do not have a reset button.
+		if (input.reset)
+			input.reset.style.visibility = (isDefault ? 'hidden' : null);
 		if (input.swatch)
 			input.swatch.value = value;
 	}
@@ -1770,6 +1772,12 @@ function initConfig(key) {
 		} else
 			setConfig(key, input.type == 'checkbox' ? Number(input.checked) : input.value);
 	};
+
+	// Toggles are reset directly by switching them; no extra reset control.
+	if (input.type === 'checkbox' || input.type === 'radio') {
+		showConfig(key);
+		return;
+	}
 
 	var reset = document.createElement('a');
 	reset.className = 'revert';
