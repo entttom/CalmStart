@@ -76,12 +76,12 @@ Chrome Web Store assets to prepare:
 - Small promo tile: 440 × 280 PNG/JPEG
 - Marquee promo tile: 1400 × 560 PNG/JPEG (optional)
 
-Recommended screenshots:
+Current screenshots (`media/shot.1.png`–`shot.5.png`, 1280 × 800):
 
 1. Main CalmStart page with a representative multi-column bookmark layout.
-2. Drag-and-drop/custom column organization.
+2. Folder context menu ("Create new column" / "Open all links in folder") showing column organization.
 3. Appearance settings showing theme, font, spacing and background controls.
-4. Sync diagnostics/settings demonstrating browser-native sync.
-5. Import/export or a second profile showing the synchronized layout.
+4. Synchronization settings and sync diagnostics demonstrating browser-native sync.
+5. Start-page profiles, showing the profile tab bar for switching between saved layouts.
 
-Store screenshots should show the actual current extension UI rather than mockups.
+Store screenshots should show the actual current extension UI rather than mockups. These were captured by loading the real `newtab.html`/settings UI in a browser with mocked `chrome.*` APIs and representative demo bookmarks (not the developer's real bookmarks or any user data).
